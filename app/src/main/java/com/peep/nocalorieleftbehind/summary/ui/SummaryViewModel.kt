@@ -1,47 +1,62 @@
 package com.peep.nocalorieleftbehind.summary.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peep.nocalorieleftbehind.core.domain.model.Consumption
-import com.peep.nocalorieleftbehind.core.domain.model.Preference
+import androidx.paging.map
+import com.peep.nocalorieleftbehind.R
 import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.Utils
+import com.peep.nocalorieleftbehind.logfood.data.FoodRepository
 import com.peep.nocalorieleftbehind.preference.data.PreferenceRepository
-import com.peep.nocalorieleftbehind.summary.data.SummaryRepository
+import com.peep.nocalorieleftbehind.summary.data.toFoodUi
 import com.peep.nocalorieleftbehind.summary.data.toSummaryUi
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class SummaryViewModel(
-    private val summaryRepository: SummaryRepository,
-    private val preferenceRepository: PreferenceRepository
+    private val foodRepository: FoodRepository,
+    preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 
-    init {
+    private val _screenUiFlow = MutableStateFlow<UiState<*>>(UiState.Loading)
+    val screenUiFlow = _screenUiFlow.asStateFlow()
+
+    val summaryUiFlow: StateFlow<SummaryUi> = foodRepository
+        .getTodayFoods(Utils.todayMidnightTimestamp())
+        .combineTransform(
+            preferenceRepository.getPreference()
+        ) { foodList, preference ->
+            preference
+                ?: return@combineTransform _screenUiFlow.update { UiState.Error(messageRes = R.string.check_preferences) }
+            emit(toSummaryUi(foodsEaten = foodList, preferences = preference))
+            _screenUiFlow.update { UiState.Success(null) }
+        }.flowOn(Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = SummaryUi.default
+        )
+
+    fun deleteFood(id: Long) {
         viewModelScope.launch {
-            val summaryUi = runCatching {
-                val consumption = async { summaryRepository.getMostRecentDailyIntakeSummary() }.await()
-                val preference = async { preferenceRepository.getPreference() }.await() ?: return@runCatching null
-                return@runCatching toSummaryUi(consumption = consumption, preference = preference)
-            }.onFailure { exception ->
-                Log.e("${exception.cause}", "${exception.message}")
-                return@launch _uiState.update { UiState.Error("Try refreshing.") }
-            }.getOrNull()
-                ?: return@launch _uiState.update { UiState.Error("Check that preferences are set.") }
-
-
-            _uiState.update {
-                UiState.Success(
-                    data = summaryUi
-                )
-            }
+            foodRepository.deleteFood(id)
         }
     }
 
-    private val _uiState = MutableStateFlow<UiState<SummaryUi>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
+    val foodsEatenFlow = foodRepository.recentFoods(viewModelScope).map { pagingData ->
+        pagingData.map { food ->
+            food.toFoodUi()
+        }
+    }
 }

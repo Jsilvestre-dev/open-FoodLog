@@ -1,7 +1,9 @@
 package com.peep.nocalorieleftbehind.summary.ui
 
-import com.peep.nocalorieleftbehind.core.domain.model.Nutrient
+import androidx.compose.runtime.Immutable
+import com.peep.nocalorieleftbehind.core.domain.Nutrient
 
+@Immutable
 data class NutrientSummary(
     val nutrient: Nutrient,
     val eaten: Int,

@@ -1,321 +1,259 @@
 package com.peep.nocalorieleftbehind.summary.ui
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumExtendedFloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.PreviewDynamicColors
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
 import com.peep.nocalorieleftbehind.R
-import com.peep.nocalorieleftbehind.core.di.CoreModule
-import com.peep.nocalorieleftbehind.core.domain.model.Nutrient
+import com.peep.nocalorieleftbehind.core.domain.Nutrient
+import com.peep.nocalorieleftbehind.core.domain.model.Nutrition
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
-import com.peep.nocalorieleftbehind.core.ui.theme.jostFamily
-import com.peep.nocalorieleftbehind.core.ui.theme.remFamily
 import com.peep.nocalorieleftbehind.core.util.UiState
-import com.peep.nocalorieleftbehind.preference.di.PreferenceModule
-import com.peep.nocalorieleftbehind.summary.di.SummaryModule
-import kotlinx.collections.immutable.toImmutableList
-import org.koin.android.ext.koin.androidContext
-import org.koin.compose.KoinApplication
+import com.peep.nocalorieleftbehind.summary.ui.compnents.FoodEatenCard
+import com.peep.nocalorieleftbehind.summary.ui.compnents.Header
+import com.peep.nocalorieleftbehind.summary.ui.compnents.MacroSummaryItem
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.compose.KoinApplicationPreview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DashboardScreen(
-    onNavigateToPreference: () -> Unit
+fun SummaryScreen(
+    onEditFood: (foodId: Long) -> Unit,
+    onLogFood: () -> Unit,
+    onNavigateToPreference: () -> Unit,
 ) {
-
     val viewModel = koinViewModel<SummaryViewModel>()
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val screenUiState = viewModel.screenUiFlow.collectAsStateWithLifecycle()
+    val summaryUiState = viewModel.summaryUiFlow.collectAsStateWithLifecycle()
+    val foodsEatenLazyPagingItems = viewModel.foodsEatenFlow.collectAsLazyPagingItems()
 
-    when (val currentState = uiState.value) {
-        is UiState.Error -> {}
-        UiState.Loading -> {}
-        is UiState.Success<SummaryUi> -> {
-            Ui(
-                summaryUi = currentState.data
-            )
+    AnimatedContent(
+        targetState = screenUiState
+    ) { uiState ->
+        when (uiState.value) {
+            is UiState.Error -> {}
+            is UiState.Loading -> {}
+            is UiState.Success<*> -> {
+                Ui(
+                    lazyPagingItems = foodsEatenLazyPagingItems,
+                    summaryUi = { summaryUiState.value },
+                    onDeleteFood = viewModel::deleteFood,
+                    onEditFood = onEditFood,
+                    onLogFood = onLogFood,
+                    onPreference = onNavigateToPreference
+                )
+            }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun Ui(
-
-    summaryUi: SummaryUi
+    lazyPagingItems: LazyPagingItems<FoodUi>,
+    summaryUi: () -> SummaryUi,
+    onDeleteFood: (id: Long) -> Unit,
+    onEditFood: (foodId: Long) -> Unit,
+    onLogFood: () -> Unit,
+    onPreference: () -> Unit
 ) {
-    Scaffold { paddingValues ->
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = summaryUi().date
+                    )
+                },
+                actions = {
+                    FilledIconButton(
+                        onClick = onPreference,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.outline_tune_24),
+                            contentDescription = ""
+                        )
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            MediumExtendedFloatingActionButton(
+                onClick = onLogFood
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier.size(FloatingActionButtonDefaults.MediumIconSize),
+                        imageVector = ImageVector.vectorResource(R.drawable.outline_fork_spoon_24),
+                        contentDescription = null
+                    )
+                    Text("Ate Food")
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = paddingValues,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item(key = "header") {
-                Header()
+                Header(
+                    caloriesSummary = { summaryUi().calories }
+                )
             }
 
             item("protein") {
                 FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     maxLines = 3
                 ) {
-                    summaryUi.nutrientSummaryList.forEach { nutrientSummary ->
-                        SmallNutritionItem(
-                            modifier = Modifier.weight(.33f),
-                            titleResId = nutrientSummary.nutrient.resId,
-                            vectorResId = nutrientSummary.nutrient.iconResId,
-                            eatenValue = nutrientSummary.eaten.toString(),
-                            leftValue = nutrientSummary.left.toString()
+                    summaryUi().protein?.let { proteinSummary ->
+                        MacroSummaryItem(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .weight(.33f),
+                            nutrientSummary = proteinSummary
+                        )
+                    }
+
+                    summaryUi().carbs?.let { carbsSummary ->
+                        MacroSummaryItem(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .weight(.33f),
+                            nutrientSummary = carbsSummary
+                        )
+                    }
+
+                    summaryUi().fats?.let { fatsSummary ->
+                        MacroSummaryItem(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .weight(.33f),
+                            nutrientSummary = fatsSummary
                         )
                     }
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun Header() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            horizontalAlignment = Alignment.Start
-        ) {
-
-            Text(
-                text = stringResource(R.string.calories),
-                style = MaterialTheme.typography.headlineLarge,
-                fontFamily = jostFamily,
-            )
-
-            Row(
-                modifier = Modifier
-                    .height(IntrinsicSize.Max),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "1370",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontFamily = remFamily,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "130",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontFamily = remFamily,
-                        fontWeight = FontWeight.Bold
+            items(
+                count = lazyPagingItems.itemCount,
+                key = { it },
+                contentType = lazyPagingItems.itemContentType { item -> item }
+            ) { index ->
+                lazyPagingItems[index]?.let { foodUi ->
+                    FoodEatenCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        foodUi = foodUi,
+                        onDeleteFood = onDeleteFood,
+                        onEditFood = onEditFood
                     )
                 }
-
-                Column(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.SpaceAround
-                ) {
-
-                    Text(
-                        text = "eaten",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontFamily = jostFamily,
-                    )
-
-                    Text(
-                        text = "left",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontFamily = jostFamily,
-                    )
-                }
-
             }
-        }
-
-
-        CircularWavyProgressIndicator(
-            modifier = Modifier
-                .fillMaxWidth(.7f)
-                .aspectRatio(1f),
-            progress = { .6f },
-            stroke = Stroke(
-                width =
-                    with(LocalDensity.current) {
-                        6.dp.toPx()
-                    },
-                cap = StrokeCap.Round,
-            ),
-            trackStroke = Stroke(
-                width =
-                    with(LocalDensity.current) {
-                        6.dp.toPx()
-                    },
-                cap = StrokeCap.Round,
-            ),
-            wavelength = 32.dp
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun SmallNutritionItem(
-    modifier: Modifier = Modifier,
-    titleResId: Int,
-    vectorResId: Int?,
-    eatenValue: String,
-    leftValue: String
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Row(
-            modifier = Modifier
-                .height(IntrinsicSize.Max),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = eatenValue,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontFamily = remFamily,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = leftValue,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontFamily = remFamily,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Column(
-                modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceAround
-            ) {
-
-                Text(
-                    text = "eaten",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontFamily = jostFamily,
-                )
-
-                Text(
-                    text = "left",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontFamily = jostFamily,
-                )
-            }
-
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ){
-            vectorResId?.let {
-                Icon(
-                    imageVector = ImageVector.vectorResource(it),
-                    contentDescription = null
-                )
-            }
-            Text(
-                text = stringResource(titleResId),
-                fontFamily = jostFamily,
-                style = MaterialTheme.typography.titleMedium
-            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-@PreviewDynamicColors
+@PreviewLightDark
 private fun Private() {
-    val context = LocalContext.current
-    KoinApplication(
-        application = {
-            androidContext(context)
-            modules(
-                CoreModule,
-                PreferenceModule,
-                SummaryModule
+    KoinApplicationPreview(
+        application = {}
+    ) {
+        val foods = mutableListOf<FoodUi>()
+        repeat(4) {
+            foods.add(
+                FoodUi(
+                    id = 0,
+                    name = "Watermelon",
+                    Nutrition(
+                        calories = 100,
+                        protein = 4,
+                        carbs = 16,
+                        fats = 0,
+                    ),
+                    timeStampEpochSec = 1000L
+                )
             )
         }
-    ) {
+
         NoCalorieLeftBehindTheme {
             Ui(
-                summaryUi = SummaryUi(
-                    calories = NutrientSummary(
-                        nutrient = Nutrient.CALORIES,
-                        eaten = 1000,
-                        left = 500,
-                        total = 1500
-                    ),
-                    nutrientSummaryList = buildList {
-                        add(
-                            NutrientSummary(
-                                nutrient = Nutrient.PROTEIN,
-                                eaten = 82,
-                                left = 68,
-                                total = 150
-                            )
-                        )
-                        add(
-                            NutrientSummary(
-                                nutrient = Nutrient.CARBS,
-                                eaten = 49,
-                                left = 31,
-                                total = 80
-                            )
-                        )
-                        add(
-                            NutrientSummary(
-                                nutrient = Nutrient.FATS,
-                                eaten = 37,
-                                left = 13,
-                                total = 50
-                            )
-                        )
-                    }.toImmutableList(),
-                    date = "Aug 18, 2025"
-                )
+                onLogFood = {},
+                summaryUi = {
+                    SummaryUi(
+                        calories = NutrientSummary(
+                            nutrient = Nutrient.CALORIES,
+                            eaten = 1000,
+                            left = 500,
+                            total = 1500
+                        ),
+
+                        protein = NutrientSummary(
+                            nutrient = Nutrient.PROTEIN,
+                            eaten = 82,
+                            left = 68,
+                            total = 150
+                        ),
+                        carbs = NutrientSummary(
+                            nutrient = Nutrient.CARBS,
+                            eaten = 49,
+                            left = 31,
+                            total = 80
+                        ),
+                        fats = NutrientSummary(
+                            nutrient = Nutrient.FATS,
+                            eaten = 37,
+                            left = 13,
+                            total = 50
+
+                        ),
+                        date = "Aug 18, 2025"
+                    )
+                },
+                onDeleteFood = {},
+                onEditFood = {},
+                onPreference = {},
+                lazyPagingItems = MutableStateFlow(PagingData.from(foods)).collectAsLazyPagingItems()
             )
         }
     }

@@ -1,7 +1,8 @@
 package com.peep.nocalorieleftbehind.core.domain.model
 
 data class Food(
+    val id: Long,
     val name: String,
-    val nutrients: Map<Nutrient, Int>,
-    val timeStamp: Long
+    val nutrition: Nutrition,
+    val timeStampEpochSec: Long
 )

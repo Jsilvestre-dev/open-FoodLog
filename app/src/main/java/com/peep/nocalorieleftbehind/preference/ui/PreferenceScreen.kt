@@ -1,178 +1,214 @@
 package com.peep.nocalorieleftbehind.preference.ui
 
+import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.InputTransformation
-import androidx.compose.foundation.text.input.maxLength
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldLabelPosition
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.peep.nocalorieleftbehind.core.domain.model.Nutrient
-import com.peep.nocalorieleftbehind.core.di.CoreModule
+import com.peep.nocalorieleftbehind.R
+import com.peep.nocalorieleftbehind.core.domain.Nutrient
+import com.peep.nocalorieleftbehind.core.ui.NutritionUi
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
+import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
+import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
 import com.peep.nocalorieleftbehind.core.util.UiState
-import com.peep.nocalorieleftbehind.preference.di.PreferenceModule
-import org.koin.android.ext.koin.androidContext
-import org.koin.compose.KoinApplication
+import com.peep.nocalorieleftbehind.onboarding.components.NutrientSelectionUi
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PreferenceScreen(onContinue: () -> Unit) {
-    val viewModel = koinViewModel<PreferenceViewModel>()
-    val preferenceUiState = viewModel.preferenceUiState.collectAsStateWithLifecycle()
+fun PreferenceScreen() {
 
-    SuccessfulUI(
-        preferenceUiState = { preferenceUiState.value },
-        onInput = viewModel::onInput,
-        onSave = { viewModel.savePreference(onCompletion = onContinue) },
-    )
+    val viewModel = koinViewModel<PreferenceViewModel>()
+    val screenUiState = viewModel.screenUiFlow.collectAsStateWithLifecycle()
+    val nutritionUiState = viewModel.nutritionUi.collectAsStateWithLifecycle()
+    val updatedNutrientUiState = viewModel.updatedNutrientUiFlow.collectAsStateWithLifecycle()
+
+    AnimatedContent(
+        targetState = screenUiState
+    ) { screenUi ->
+        when (screenUi.value) {
+            is UiState.Error -> {}
+            is UiState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LoadingIndicator()
+                }
+            }
+
+            is UiState.Success<*> -> {
+                SuccessUi(
+                    nutritionUi = { nutritionUiState.value },
+                    updatedNutrientUi = { updatedNutrientUiState.value },
+                    onNutrientsSelected = viewModel::onSelected,
+                    onInput = viewModel::onInput,
+                    onUpdateNutrient = viewModel::onUpdateNutrientUi,
+                    onSave = viewModel::savePreference,
+                    onRemove = viewModel::onRemove
+                )
+            }
+        }
+    }
+
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
-private fun SuccessfulUI(
-    preferenceUiState: () -> PreferenceUiState,
-    onInput: (NutrientInput) -> Unit,
-    onSave: () -> Unit
+private fun SuccessUi(
+    nutritionUi: () -> NutritionUi,
+    updatedNutrientUi: () -> NutrientUi?,
+    onNutrientsSelected: (List<Nutrient>) -> Unit,
+    onInput: (NutrientData) -> Unit,
+    onUpdateNutrient: (Nutrient?) -> Unit,
+    onSave: () -> Unit,
+    onRemove: (Nutrient) -> Unit
 ) {
-    Scaffold(
-        bottomBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                FilledTonalIconButton(
-                    modifier =
-                        Modifier
-                            .padding(horizontal = 8.dp)
-                            .size(
-                                IconButtonDefaults.largeContainerSize(
-                                    IconButtonDefaults.IconButtonWidthOption.Wide
-                                )
-                            ),
-                    onClick = onSave,
+    val sheetState = rememberModalBottomSheetState()
+    val showBottomSheet = remember { mutableStateOf(false) }
+
+    SharedTransitionLayout {
+        Scaffold(
+            contentWindowInsets = WindowInsets(left = 16.dp, right = 16.dp),
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.preferences),
+                            fontFamily = montserratFamily,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                )
+            },
+            floatingActionButtonPosition = FabPosition.Center,
+            floatingActionButton = {
+                SmallExtendedFloatingActionButton(
+                    onClick = {
+                        showBottomSheet.value = true
+                    }
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(IconButtonDefaults.largeIconSize)
+                        imageVector = Icons.Default.Add,
+                        contentDescription = ""
+                    )
+                }
+            }
+        ) { paddingValues ->
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = paddingValues
+            ) {
+                items(
+                    items = nutritionUi().trackedNutrients(true),
+                    key = { it.name },
+                    contentType = { nutritionUi().getNutrientUi(it) }
+                ) { nutrient ->
+                    PreferenceCard(
+                        modifier = Modifier.animateItem(),
+                        nutrientBeingUpdated = { updatedNutrientUi()?.nutrient },
+                        nutrient = nutrient,
+                        nutrientUiState = { nutritionUi().getNutrientUi(nutrient)!! },
+                        onRemove = onRemove,
+                        onEdit = {
+                            onUpdateNutrient(nutrient)
+                        }
                     )
                 }
             }
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
 
-            item("title") {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    textAlign = TextAlign.Center,
-                    text = "Set your intake goals",
-                    style = MaterialTheme.typography.displaySmall
-                )
+        NutrientDialog(
+            nutrient = { updatedNutrientUi()?.nutrient },
+            nutrientUiState = { updatedNutrientUi()?.ui },
+            onInput = onInput,
+            onDismiss = {
+                onUpdateNutrient(null)
+            },
+            onSave = onSave
+        )
+    }
+
+    if (showBottomSheet.value) {
+        ModalBottomSheet(
+            modifier = Modifier.fillMaxWidth(),
+            sheetState = sheetState,
+            onDismissRequest = {
+                showBottomSheet.value = false
             }
+        ) {
+            Column {
 
-            items(
-                items = Nutrient.entries,
-                key = { it.name },
-            ) { nutrient ->
+                val nutrientSelected = remember { mutableStateOf(listOf<Nutrient>()) }
 
-                val nutrientUiState = preferenceUiState().getNutrient(nutrient)
-                val textFieldState = rememberTextFieldState(
-                    initialText = (nutrientUiState as? UiState.Success<Int>)?.data?.toString() ?: ""
+                NutrientSelectionUi(
+                    modifier = Modifier.padding(16.dp),
+                    selectableNutrients = nutritionUi().untrackedNutrients(),
+                    selectedNutrient = { nutrientSelected.value },
+                    onNutrientSelected = { nutrient ->
+                        nutrientSelected.value.let { nutrientList ->
+                            nutrientSelected.value = if (nutrientList.contains(nutrient)) {
+                                nutrientList.minus(nutrient)
+                            } else {
+                                nutrientList.plus(nutrient)
+                            }
+                        }
+                    }
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.Center
                 ) {
-
-                    Text(
-                        modifier = Modifier.weight(.5f),
-                        text = stringResource(nutrient.resId),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-
-                    OutlinedTextField(
-                        modifier = Modifier.weight(.5f),
-                        enabled = nutrientUiState !is UiState.Loading,
-                        labelPosition = TextFieldLabelPosition.Above(),
-                        label = {
-                            if (nutrient != Nutrient.CALORIES) {
-                                Text(
-                                    text = "(Optional)",
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        },
-                        textStyle = MaterialTheme.typography.titleLargeEmphasized.copy(textAlign = TextAlign.Center),
-                        state = textFieldState,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        isError = nutrientUiState is UiState.Error,
-                        supportingText = {
-                            if (nutrientUiState is UiState.Error) {
-                                Text(
-                                    text = "Something is wrong",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            }
-                        },
-                        shape = ShapeDefaults.Large,
-                        inputTransformation = InputTransformation.maxLength(4)
-                    )
-                }
-
-                textFieldState.text.toString().let { text ->
-                    LaunchedEffect(text) {
-                        onInput(
-                            NutrientInput(
-                                value = runCatching { text.toInt() }.getOrNull(),
-                                nutrient = nutrient
-                            )
+                    Button(
+                        onClick = {
+                            onNutrientsSelected(nutrientSelected.value)
+                            showBottomSheet.value = false
+                        }
+                    ) {
+                        Text(
+                            text = "Confirm",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontFamily = notoSansFamily
                         )
                     }
                 }
@@ -181,21 +217,26 @@ private fun SuccessfulUI(
     }
 }
 
-@Preview
 @Composable
-private fun PreviewSuccessfulUi() {
-    val context = LocalContext.current
-    KoinApplication(
-        application = {
-            androidContext(context)
-            modules(PreferenceModule, CoreModule)
-        }
-    ) {
-        NoCalorieLeftBehindTheme {
-            SuccessfulUI(
-                preferenceUiState = { PreferenceUiState.default() },
+@Preview
+private fun Preview() {
+    NoCalorieLeftBehindTheme {
+        AnimatedVisibility(visible = true) {
+            SuccessUi(
+                nutritionUi = {
+                    NutritionUi()
+                },
+                updatedNutrientUi = {
+                    NutrientUi(
+                        nutrient = Nutrient.CALORIES,
+                        ui = UiState.Loading
+                    )
+                },
+                onNutrientsSelected = {},
                 onInput = {},
-                onSave = {}
+                onUpdateNutrient = {},
+                onSave = {},
+                onRemove = {}
             )
         }
     }

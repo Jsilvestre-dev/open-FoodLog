@@ -2,11 +2,23 @@ package com.peep.nocalorieleftbehind.core.ui
 
 import kotlinx.serialization.Serializable
 
+// routes
 @Serializable
-object PreferenceScreen
+object Summary : Screen
 
 @Serializable
-object SummaryScreen
+data class LogFood(val foodId: Long? = null) : Screen
 
 @Serializable
-object LogFoodScreen
+object Preference : Screen
+
+@Serializable
+object Onboarding : Screen {
+    @Serializable
+    object NutrientSelection
+
+    @Serializable
+    object NutrientTargets
+}
+
+interface Screen

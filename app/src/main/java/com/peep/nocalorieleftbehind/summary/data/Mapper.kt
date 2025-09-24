@@ -1,11 +1,11 @@
 package com.peep.nocalorieleftbehind.summary.data
 
-import com.peep.nocalorieleftbehind.core.domain.model.Consumption
-import com.peep.nocalorieleftbehind.core.domain.model.Nutrient
-import com.peep.nocalorieleftbehind.core.domain.model.Preference
+import com.peep.nocalorieleftbehind.core.domain.model.Food
+import com.peep.nocalorieleftbehind.core.domain.Nutrient
+import com.peep.nocalorieleftbehind.core.domain.model.Preferences
+import com.peep.nocalorieleftbehind.summary.ui.FoodUi
 import com.peep.nocalorieleftbehind.summary.ui.NutrientSummary
 import com.peep.nocalorieleftbehind.summary.ui.SummaryUi
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -15,59 +15,65 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-
 @OptIn(ExperimentalTime::class, ExperimentalTime::class, FormatStringsInDatetimeFormats::class)
-fun toSummaryUi(consumption: Consumption?, preference: Preference): SummaryUi {
+fun toSummaryUi(foodsEaten: List<Food>, preferences: Preferences): SummaryUi {
 
-    val caloriesEaten = consumption?.caloriesEaten ?: 0
-    val caloriesNutrientSummary = NutrientSummary(
+    val caloriesEaten = foodsEaten.sumOf { food -> food.nutrition.calories }
+    val caloriesSummary = NutrientSummary(
         nutrient = Nutrient.CALORIES,
         eaten = caloriesEaten,
-        left = caloriesEaten - preference.calories,
-        total = preference.calories
+        left = preferences.nutrition.calories - caloriesEaten,
+        total = preferences.nutrition.calories
     )
 
-    val nutrientSummaryMap = buildList {
-        consumption?.let {
-            add(
-                NutrientSummary(
-                    nutrient = Nutrient.PROTEIN,
-                    eaten = it.proteinEaten,
-                    left = it.proteinEaten - preference.protein,
-                    total = preference.protein
-                )
-            )
-            add(
-                NutrientSummary(
-                    nutrient = Nutrient.CARBS,
-                    eaten = it.carbsEaten,
-                    left = it.carbsEaten - preference.carbs,
-                    total = preference.carbs
-                )
-            )
-            add(
-                NutrientSummary(
-                    nutrient = Nutrient.FATS,
-                    eaten = it.fatsEaten,
-                    left = it.fatsEaten - preference.fats,
-                    total = preference.fats
-                )
-            )
-        }
-    }.toImmutableList()
-
-    val dateFormat = LocalDate.Format {
-        byUnicodePattern("MMM dd, yyyy")
+    val proteinSummary = preferences.nutrition.protein?.let {
+        val proteinEaten = foodsEaten.sumOf { food -> food.nutrition.protein ?: 0 }
+        NutrientSummary(
+            nutrient = Nutrient.PROTEIN,
+            eaten = proteinEaten,
+            left = preferences.nutrition.protein - proteinEaten,
+            total = preferences.nutrition.protein
+        )
     }
 
-    val formattedDate = consumption?.timeCreated?.let { time ->
-        val localDate = LocalDate.fromEpochDays(time)
-        localDate.format(dateFormat)
-    } ?: Clock.System.todayIn(TimeZone.currentSystemDefault()).format(dateFormat)
+    val carbsSummary = preferences.nutrition.carbs?.let {
+        val carbsEaten = foodsEaten.sumOf { food -> food.nutrition.carbs ?: 0 }
+        NutrientSummary(
+            nutrient = Nutrient.CARBS,
+            eaten = carbsEaten,
+            left = preferences.nutrition.carbs - carbsEaten,
+            total = preferences.nutrition.carbs
+        )
+    }
+
+    val fatsSummary = preferences.nutrition.fats?.let {
+        val fatsEaten = foodsEaten.sumOf { food -> food.nutrition.fats ?: 0 }
+        NutrientSummary(
+            nutrient = Nutrient.FATS,
+            eaten = fatsEaten,
+            left = preferences.nutrition.fats - fatsEaten,
+            total = preferences.nutrition.fats
+        )
+    }
+
+    val dateFormat = LocalDate.Format {
+        byUnicodePattern("MM dd, yyyy")
+    }
+
+    val formattedDate = Clock.System.todayIn(TimeZone.currentSystemDefault()).format(dateFormat)
 
     return SummaryUi(
-        calories = caloriesNutrientSummary,
-        nutrientSummaryList = nutrientSummaryMap,
+        calories = caloriesSummary,
+        protein = proteinSummary,
+        carbs = carbsSummary,
+        fats = fatsSummary,
         date = formattedDate
     )
 }
+
+fun Food.toFoodUi() = FoodUi(
+    id = id,
+    name = name,
+    nutrition = nutrition,
+    timeStampEpochSec = timeStampEpochSec
+)

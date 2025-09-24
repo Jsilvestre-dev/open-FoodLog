@@ -3,6 +3,13 @@
     // app
     <string name="app_name">NoCalorieLeftBehind</string>
 
+    // actions
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+
+    // Title
+    <string name="preferences">Preferences</string>
+
     // descriptions
     <string name="clear_text">Clear Text</string>
     <string name="eaten">Eaten</string>
@@ -18,5 +25,11 @@
     <string name="fats">Fats</string>
 
     // error message
-    <string name="error_empty">Please enter a value</string>
+    <string name="enter_a_name">Enter a name</string>
+    <string name="enter_an_amount">Enter an amount</string>
+    <string name="amount_must_be_num">Enter numbers only</string>
+    <string name="positive_amount_only">Positive numbers only</string>
+    <string name="invalid_input">Invalid input</string>
+    <string name="check_preferences">Check that preferences have been set</string>
+    <string name="try_refreshing">Try refreshing</string>
 </resources>

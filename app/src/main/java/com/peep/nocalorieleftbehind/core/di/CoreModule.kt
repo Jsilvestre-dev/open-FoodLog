@@ -6,7 +6,7 @@ import com.peep.nocalorieleftbehind.core.data.local.NutritionLogDatabase
 import com.peep.nocalorieleftbehind.core.data.local.NutritionLogLocalDataSource
 import com.peep.nocalorieleftbehind.core.data.local.NutritionLogLocalDataSourceImpl
 import com.peep.nocalorieleftbehind.core.domain.ValidateFoodNameUseCase
-import com.peep.nocalorieleftbehind.core.domain.ValidateNutrientValueUseCase
+import com.peep.nocalorieleftbehind.core.domain.ValidateNutrientUseCase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
@@ -28,11 +28,11 @@ val CoreModule = module {
     }
     single { get<NutritionLogDatabase>().preferenceDao() }
     single { get<NutritionLogDatabase>().foodDao() }
-    single { get<NutritionLogDatabase>().dailyIntakeSummaryDao() }
+
     factoryOf(::NutritionLogLocalDataSourceImpl) {
         bind<NutritionLogLocalDataSource>()
     }
 
-    factoryOf(::ValidateNutrientValueUseCase)
+    factoryOf(::ValidateNutrientUseCase)
     factoryOf(::ValidateFoodNameUseCase)
 }

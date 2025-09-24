@@ -1,7 +1,7 @@
 package com.peep.nocalorieleftbehind.core.data.local.converter
 
 import androidx.room.TypeConverter
-import com.peep.nocalorieleftbehind.core.domain.model.Nutrient
+import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter

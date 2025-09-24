@@ -9,21 +9,177 @@ import androidx.compose.ui.text.font.FontWeight
 import com.peep.nocalorieleftbehind.R
 
 @OptIn(ExperimentalTextApi::class)
-val jostFamily = FontFamily(
+val notoSansFamily = FontFamily(
     Font(
-        resId = R.font.jost_variablefont_wght, variationSettings = FontVariation.Settings()
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.Thin,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Thin.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.ExtraLight,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.ExtraLight.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.Light,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Light.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Normal.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Medium.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.SemiBold.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Bold.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.ExtraBold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.ExtraBold.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_variablefont_wght,
+        weight = FontWeight.Black,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Black.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_italic_variablefont_wght,
+        style = FontStyle.Italic,
+        weight = FontWeight.Thin
+    ),
+    Font(
+        resId = R.font.notosans_italic_variablefont_wght,
+        style = FontStyle.Italic,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Normal.weight)
+        )
+    ),
+    Font(
+        resId = R.font.notosans_italic_variablefont_wght,
+        style = FontStyle.Italic,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Bold.weight)
+        )
     )
 )
 
-val fugazOneFamily = FontFamily(
-    Font(resId = R.font.fugazone_regular, weight = FontWeight.Normal)
-)
-
 @OptIn(ExperimentalTextApi::class)
-val remFamily = FontFamily(
+val montserratFamily = FontFamily(
     Font(
-        resId = R.font.rem_variablefont_wght, variationSettings = FontVariation.Settings(
-            FontVariation.weight(400)
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.Thin,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Thin.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.ExtraLight,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.ExtraLight.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.Light,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Light.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Normal.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Medium.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.SemiBold.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Bold.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.ExtraBold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.ExtraBold.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_variablefont_wght,
+        weight = FontWeight.Black,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Black.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_italic_variable_font_wght,
+        style = FontStyle.Italic,
+        weight = FontWeight.Thin
+    ),
+    Font(
+        resId = R.font.montserrat_italic_variable_font_wght,
+        style = FontStyle.Italic,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Normal.weight)
+        )
+    ),
+    Font(
+        resId = R.font.montserrat_italic_variable_font_wght,
+        style = FontStyle.Italic,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(
+            FontVariation.weight(FontWeight.Bold.weight)
         )
     )
 )

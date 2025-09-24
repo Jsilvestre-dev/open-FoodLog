@@ -1,14 +1,16 @@
 package com.peep.nocalorieleftbehind.core.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.peep.nocalorieleftbehind.core.domain.model.Nutrient
+import com.peep.nocalorieleftbehind.core.domain.model.Nutrition
 
 @Entity
 data class FoodEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Long,
     val name: String,
-    val nutrients: Map<Nutrient, Int>,
-    val timeStamp: Long
+    @Embedded
+    val nutrition: Nutrition,
+    val timeStampEpochSec: Long
 )

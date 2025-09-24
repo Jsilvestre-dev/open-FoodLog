@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f313ed4c5dd40135608010527ace352c",
+    "identityHash": "59568e00e51ab5545756a5a7958fd161",
     "entities": [
       {
-        "tableName": "PreferenceEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `calories` INTEGER NOT NULL, `protein` INTEGER NOT NULL, `carbs` INTEGER NOT NULL, `fats` INTEGER NOT NULL)",
+        "tableName": "PreferencesEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `calories` INTEGER NOT NULL, `protein` INTEGER, `carbs` INTEGER, `fats` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -15,32 +15,29 @@
             "notNull": true
           },
           {
-            "fieldPath": "calories",
+            "fieldPath": "nutrition.calories",
             "columnName": "calories",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "protein",
+            "fieldPath": "nutrition.protein",
             "columnName": "protein",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           },
           {
-            "fieldPath": "carbs",
+            "fieldPath": "nutrition.carbs",
             "columnName": "carbs",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           },
           {
-            "fieldPath": "fats",
+            "fieldPath": "nutrition.fats",
             "columnName": "fats",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
             "id"
           ]
@@ -48,7 +45,7 @@
       },
       {
         "tableName": "FoodEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `nutrients` TEXT NOT NULL, `timeStamp` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `timeStampEpochSec` INTEGER NOT NULL, `calories` INTEGER NOT NULL, `protein` INTEGER, `carbs` INTEGER, `fats` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -63,70 +60,31 @@
             "notNull": true
           },
           {
-            "fieldPath": "nutrients",
-            "columnName": "nutrients",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "timeStamp",
-            "columnName": "timeStamp",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        }
-      },
-      {
-        "tableName": "ConsumptionEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `totalCalories` INTEGER NOT NULL, `totalProtein` INTEGER NOT NULL, `totalCarbs` INTEGER NOT NULL, `totalFats` INTEGER NOT NULL, `foodsEatenIds` TEXT NOT NULL, `timeCreated` INTEGER NOT NULL)",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "timeStampEpochSec",
+            "columnName": "timeStampEpochSec",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "totalCalories",
-            "columnName": "totalCalories",
+            "fieldPath": "nutrition.calories",
+            "columnName": "calories",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "totalProtein",
-            "columnName": "totalProtein",
-            "affinity": "INTEGER",
-            "notNull": true
+            "fieldPath": "nutrition.protein",
+            "columnName": "protein",
+            "affinity": "INTEGER"
           },
           {
-            "fieldPath": "totalCarbs",
-            "columnName": "totalCarbs",
-            "affinity": "INTEGER",
-            "notNull": true
+            "fieldPath": "nutrition.carbs",
+            "columnName": "carbs",
+            "affinity": "INTEGER"
           },
           {
-            "fieldPath": "totalFats",
-            "columnName": "totalFats",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "foodsEatenIds",
-            "columnName": "foodsEatenIds",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "timeCreated",
-            "columnName": "timeCreated",
-            "affinity": "INTEGER",
-            "notNull": true
+            "fieldPath": "nutrition.fats",
+            "columnName": "fats",
+            "affinity": "INTEGER"
           }
         ],
         "primaryKey": {
@@ -139,7 +97,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f313ed4c5dd40135608010527ace352c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '59568e00e51ab5545756a5a7958fd161')"
     ]
   }
 }
