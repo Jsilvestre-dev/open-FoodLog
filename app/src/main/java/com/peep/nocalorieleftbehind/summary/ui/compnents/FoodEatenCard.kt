@@ -36,10 +36,8 @@ fun FoodEatenCard(
     onDeleteFood: (Long) -> Unit,
     onEditFood: (foodId: Long) -> Unit
 ) {
-    val expanded = remember { mutableStateOf(false) }
-
     Card(
-        modifier = Modifier,
+        modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onSecondary
@@ -49,7 +47,7 @@ fun FoodEatenCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
                 modifier = modifier.fillMaxWidth(),
@@ -58,20 +56,22 @@ fun FoodEatenCard(
                 Column {
                     Text(
                         text = foodUi.name,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontFamily = montserratFamily,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = foodUi.nutrition.calories.toString() + " cal",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
                 Box {
+                    val expanded = remember { mutableStateOf(false) }
+
                     IconButton(
-                        onClick = { expanded.value = !expanded.value },
+                        onClick = { expanded.value = true },
                     ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
@@ -102,13 +102,13 @@ fun FoodEatenCard(
                 Column {
                     Text(
                         text = foodUi.nutrition.protein.toString() + " g",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = "protein",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Normal
                     )
@@ -117,13 +117,13 @@ fun FoodEatenCard(
                 Column {
                     Text(
                         text = foodUi.nutrition.carbs.toString() + " g",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = "carbs",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Normal
                     )
@@ -132,13 +132,13 @@ fun FoodEatenCard(
                 Column {
                     Text(
                         text = foodUi.nutrition.fats.toString() + " g",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = "fats",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Normal
                     )

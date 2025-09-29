@@ -13,7 +13,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,12 +40,10 @@ fun NutrientCard(
     nutrient: Nutrient,
     onClick: () -> Unit
 ) {
-    val checked = remember { mutableStateOf(isSelected) }
-    checked.value = isSelected
     val containerColor =
-        if (checked.value) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest
+        if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest
     val contentColor =
-        if (checked.value) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+        if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     val morph = remember {
         Morph(
             start = RoundedPolygon.rectangle(rounding = CornerRounding(radius = .6f)),
@@ -58,7 +55,7 @@ fun NutrientCard(
         )
     }
     val animatedProgress = animateFloatAsState(
-        targetValue = if (checked.value) 1f else 0f,
+        targetValue = if (isSelected) 1f else 0f,
         label = "progress",
     )
 
@@ -72,10 +69,8 @@ fun NutrientCard(
                 drawRect(containerColor)
             }
             .clickable(
-                onClick = {
-                    onClick()
-                    checked.value = isSelected
-                }
+                onClick = onClick
+
             )
             .aspectRatio(1f),
         contentAlignment = Alignment.Center

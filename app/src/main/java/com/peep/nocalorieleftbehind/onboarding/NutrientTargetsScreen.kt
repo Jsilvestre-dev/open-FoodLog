@@ -49,7 +49,8 @@ import com.peep.nocalorieleftbehind.core.ui.NutritionUi
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.Ui
+import com.peep.nocalorieleftbehind.core.util.UiElement
 import com.peep.nocalorieleftbehind.onboarding.di.OnboardingModule
 import com.peep.nocalorieleftbehind.preference.ui.NutrientData
 import org.koin.android.ext.koin.androidContext
@@ -58,7 +59,7 @@ import org.koin.compose.KoinApplication
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NutrientTargetsScreen(
-    screenUiState: () -> UiState<*>,
+    ui: () -> Ui,
     selectedNutrient: () -> List<Nutrient>,
     nutritionUi: () -> NutritionUi,
     onInput: (NutrientData) -> Unit,
@@ -106,14 +107,14 @@ fun NutrientTargetsScreen(
     ) { paddingValues ->
 
         AnimatedContent(
-            targetState = screenUiState
-        ) { uiState: () -> UiState<*> ->
-            when (uiState()) {
-                is UiState.Error -> {
+            targetState = ui()
+        ) { uiTarget ->
+            when (uiTarget) {
+                is Ui.Error -> {
 
                 }
 
-                is UiState.Loading -> {
+                is Ui.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -122,7 +123,7 @@ fun NutrientTargetsScreen(
                     }
                 }
 
-                is UiState.Success<*> -> {
+                is Ui.Success -> {
                     SuccessfulUI(
                         paddingValues = paddingValues,
                         selectedNutrient = selectedNutrient,
@@ -151,7 +152,7 @@ private fun SuccessfulUI(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = selectedNutrient.invoke(),
+            items = selectedNutrient(),
             key = { it.name },
             contentType = { nutritionUi().getNutrientUi(it) }
         ) { nutrient ->
@@ -175,7 +176,7 @@ private fun SuccessfulUI(
 
                 OutlinedTextField(
                     modifier = Modifier.weight(.6f),
-                    isError = nutrientUiState is UiState.Error,
+                    isError = nutrientUiState is UiElement.Error,
                     labelPosition = TextFieldLabelPosition.Attached(),
                     label = {
                         if (nutrient != Nutrient.CALORIES) {
@@ -200,7 +201,7 @@ private fun SuccessfulUI(
                         )
                     },
                     supportingText = {
-                        if (nutrientUiState is UiState.Error) {
+                        if (nutrientUiState is UiElement.Error) {
                             nutrientUiState.messageRes?.let {
                                 Text(
                                     text = stringResource(nutrientUiState.messageRes),

@@ -7,7 +7,8 @@ import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.domain.model.Nutrition
 import com.peep.nocalorieleftbehind.core.domain.model.Preferences
 import com.peep.nocalorieleftbehind.core.ui.NutritionUi
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.Ui
+import com.peep.nocalorieleftbehind.core.util.UiElement
 import com.peep.nocalorieleftbehind.preference.data.PreferenceRepository
 import com.peep.nocalorieleftbehind.preference.ui.NutrientData
 import kotlinx.coroutines.FlowPreview
@@ -23,20 +24,19 @@ class OnboardingViewModel(
     private val validateNutrientUseCase: ValidateNutrientUseCase
 ) : ViewModel() {
 
-    private val _screenUiFlow = MutableStateFlow<UiState<*>>(UiState.Success(null))
-    val screenUiFlow = _screenUiFlow.asStateFlow()
+    private val _ui = MutableStateFlow<Ui>(value = Ui.Success)
+    val ui = _ui.asStateFlow()
 
-    private val _nutritionUiFlow = MutableStateFlow<NutritionUi>(NutritionUi())
+    private val _nutritionUiFlow = MutableStateFlow<NutritionUi>(value = NutritionUi())
     val nutritionUiFlow: StateFlow<NutritionUi> = _nutritionUiFlow.asStateFlow()
 
     fun onSelected(nutrient: Nutrient) {
         viewModelScope.launch {
-            if (_screenUiFlow.value !is UiState.Success) return@launch
             _nutritionUiFlow.update { nutritionUi ->
-                val uiState = if (nutritionUi.trackedNutrients().contains(nutrient)) {
+                val uiState = if (nutritionUi.getNutrientUi(nutrient) != null) {
                     null
                 } else {
-                    UiState.Success("0")
+                    UiElement.Loading
                 }
                 nutritionUi.updateNutrientUi(nutrient = nutrient, uiState = uiState)
             }
@@ -56,9 +56,8 @@ class OnboardingViewModel(
 
     fun savePreference(onCompletion: () -> Unit = {}) {
         viewModelScope.launch {
-            if (_screenUiFlow.value !is UiState.Success) return@launch
 
-            _screenUiFlow.update { UiState.Loading }
+            _ui.update { Ui.Loading }
 
             val currentNutritionUi = _nutritionUiFlow.value
 
@@ -71,17 +70,17 @@ class OnboardingViewModel(
 
             if (!validatedNutritionUi.areAllNutrientsValid()) {
                 _nutritionUiFlow.update { validatedNutritionUi }
-                _screenUiFlow.update { UiState.Success(null) }
+                _ui.update { Ui.Success }
                 return@launch
             }
 
             val preferences = validatedNutritionUi.let {
                 Preferences(
                     nutrition = Nutrition(
-                        calories = (it.calories as UiState.Success<String>).data.toInt(),
-                        protein = (it.protein as? UiState.Success<String>)?.data?.toInt(),
-                        carbs = (it.carbs as? UiState.Success<String>)?.data?.toInt(),
-                        fats = (it.fats as? UiState.Success<String>)?.data?.toInt()
+                        calories = (it.calories as UiElement.Success<String>).data.toInt(),
+                        protein = (it.protein as? UiElement.Success<String>)?.data?.toInt(),
+                        carbs = (it.carbs as? UiElement.Success<String>)?.data?.toInt(),
+                        fats = (it.fats as? UiElement.Success<String>)?.data?.toInt()
                     ),
                 )
             }

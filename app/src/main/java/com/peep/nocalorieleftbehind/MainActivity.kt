@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                                 val nutritionUiState = viewModel.nutritionUiFlow.collectAsStateWithLifecycle()
 
                                 NutrientSelectionScreen(
-                                    selectedNutrient = { nutritionUiState.value.trackedNutrients() },
+                                    nutritionUi = { nutritionUiState.value },
                                     onSelectedNutrient = viewModel::onSelected,
                                     onContinue = { navController.navigate(route = Onboarding.NutrientTargets) }
                                 )
@@ -93,10 +93,10 @@ class MainActivity : ComponentActivity() {
                                     navGraphRoute = Onboarding
                                 )
                                 val nutritionUiState = viewModel.nutritionUiFlow.collectAsStateWithLifecycle()
-                                val screenUiState = viewModel.screenUiFlow.collectAsStateWithLifecycle()
+                                val screenUiState = viewModel.ui.collectAsStateWithLifecycle()
 
                                 NutrientTargetsScreen(
-                                    screenUiState = { screenUiState.value },
+                                    ui = { screenUiState.value },
                                     selectedNutrient = { nutritionUiState.value.trackedNutrients(includeCalories = true) },
                                     nutritionUi = { nutritionUiState.value },
                                     onInput = viewModel::onInput,

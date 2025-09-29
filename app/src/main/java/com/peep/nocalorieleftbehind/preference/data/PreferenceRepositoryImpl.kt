@@ -4,7 +4,6 @@ import com.peep.nocalorieleftbehind.core.data.local.NutritionLogLocalDataSource
 import com.peep.nocalorieleftbehind.core.data.mapper.toPreference
 import com.peep.nocalorieleftbehind.core.data.mapper.toPreferenceEntity
 import com.peep.nocalorieleftbehind.core.domain.model.Preferences
-import com.peep.nocalorieleftbehind.core.util.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

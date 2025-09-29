@@ -3,7 +3,6 @@ package com.peep.nocalorieleftbehind.core.data.local
 import androidx.paging.Pager
 import com.peep.nocalorieleftbehind.core.data.local.entity.FoodEntity
 import com.peep.nocalorieleftbehind.core.data.local.entity.PreferencesEntity
-import com.peep.nocalorieleftbehind.core.util.Result
 import kotlinx.coroutines.flow.Flow
 
 interface NutritionLogLocalDataSource {
@@ -11,9 +10,9 @@ interface NutritionLogLocalDataSource {
 
     fun queryPreference(): Flow<PreferencesEntity?>
 
-    suspend fun upsertFood(foodEntity: FoodEntity): Result
+    suspend fun upsertFood(foodEntity: FoodEntity)
 
-    suspend fun deleteFoodEntityById(id: Long): Result
+    suspend fun deleteFoodEntityById(id: Long)
 
     suspend fun findFoodById(id: Long): FoodEntity
 

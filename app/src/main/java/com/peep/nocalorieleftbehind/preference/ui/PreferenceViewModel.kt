@@ -8,7 +8,7 @@ import com.peep.nocalorieleftbehind.core.domain.model.Preferences
 import com.peep.nocalorieleftbehind.core.ui.NutritionUi
 import com.peep.nocalorieleftbehind.core.ui.toNutrition
 import com.peep.nocalorieleftbehind.core.ui.toNutritionUi
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.UiElement
 import com.peep.nocalorieleftbehind.preference.data.PreferenceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,7 +24,7 @@ class PreferenceViewModel(
     private val validateNutrientUseCase: ValidateNutrientUseCase
 ) : ViewModel() {
 
-    private val _screenUiFlow: MutableStateFlow<UiState<*>> = MutableStateFlow(UiState.Success(null))
+    private val _screenUiFlow: MutableStateFlow<UiElement<*>> = MutableStateFlow(UiElement.Success(null))
     val screenUiFlow = _screenUiFlow.asStateFlow()
 
     private val _updatedNutrientUiFlow = MutableStateFlow<NutrientUi?>(null)
@@ -49,7 +49,7 @@ class PreferenceViewModel(
             _updatedNutrientUiFlow.update { nutritionUi ->
                 NutrientUi(
                     nutrient = nutrient,
-                    ui = this@PreferenceViewModel.nutritionUi.value.getNutrientUi(nutrient) ?: UiState.Loading
+                    ui = this@PreferenceViewModel.nutritionUi.value.getNutrientUi(nutrient) ?: UiElement.Loading
                 )
             }
         }
@@ -61,7 +61,7 @@ class PreferenceViewModel(
 
             var currentNutritionUi = nutritionUi.value
             selectedNutrients.forEach { nutrient ->
-                currentNutritionUi = currentNutritionUi.updateNutrientUi(nutrient = nutrient, UiState.Success("0"))
+                currentNutritionUi = currentNutritionUi.updateNutrientUi(nutrient = nutrient, UiElement.Success("0"))
             }
 
             preferenceRepository.savePreference(
@@ -99,12 +99,12 @@ class PreferenceViewModel(
 
     fun savePreference() {
         viewModelScope.launch {
-            _screenUiFlow.update { UiState.Loading }
+            _screenUiFlow.update { UiElement.Loading }
 
             val currentUpdatedNutrientUi = _updatedNutrientUiFlow.value
 
-            if (currentUpdatedNutrientUi == null || currentUpdatedNutrientUi.ui !is UiState.Success) return@launch _screenUiFlow.update {
-                UiState.Success(
+            if (currentUpdatedNutrientUi == null || currentUpdatedNutrientUi.ui !is UiElement.Success) return@launch _screenUiFlow.update {
+                UiElement.Success(
                     null
                 )
             }
@@ -120,7 +120,7 @@ class PreferenceViewModel(
                 )
             )
 
-            _screenUiFlow.update { UiState.Success(null) }
+            _screenUiFlow.update { UiElement.Success(null) }
         }
     }
 }

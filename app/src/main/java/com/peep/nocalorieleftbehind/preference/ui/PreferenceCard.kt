@@ -37,7 +37,7 @@ import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.UiElement
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -45,7 +45,7 @@ fun SharedTransitionScope.PreferenceCard(
     modifier: Modifier = Modifier,
     nutrientBeingUpdated: () -> Nutrient?,
     nutrient: Nutrient,
-    nutrientUiState: () -> UiState<String>,
+    nutrientUiState: () -> UiElement<String>,
     onRemove: (Nutrient) -> Unit,
     onEdit: () -> Unit
 ) {
@@ -129,7 +129,7 @@ fun SharedTransitionScope.PreferenceCard(
                         }
                     }
                     Text(
-                        text = (nutrientUiState() as? UiState.Success)?.data.plus(" ${nutrient.unit}"),
+                        text = (nutrientUiState() as? UiElement.Success)?.data.plus(" ${nutrient.unit}"),
                         style = MaterialTheme.typography.bodyLarge,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Medium
@@ -150,7 +150,7 @@ private fun Preview() {
                 PreferenceCard(
                     nutrientBeingUpdated = { null },
                     nutrient = Nutrient.CALORIES,
-                    nutrientUiState = { UiState.Success("100") },
+                    nutrientUiState = { UiElement.Success("100") },
                     onRemove = {},
                     onEdit = {}
                 )

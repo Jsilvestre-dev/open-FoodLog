@@ -22,15 +22,15 @@ fun NutrientSelectionUi(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     selectableNutrients: List<Nutrient>,
-    selectedNutrient: () -> List<Nutrient>,
+    selectedNutrients: () -> List<Nutrient>,
     onNutrientSelected: (Nutrient) -> Unit
 ) {
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Fixed(3),
         contentPadding = paddingValues,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item(
             key = "title",
@@ -52,7 +52,7 @@ fun NutrientSelectionUi(
             contentType = { it }
         ) { nutrient ->
             NutrientCard(
-                isSelected = selectedNutrient().contains(nutrient),
+                isSelected = selectedNutrients().contains(nutrient),
                 nutrient = nutrient,
                 onClick = {
                     onNutrientSelected(nutrient)

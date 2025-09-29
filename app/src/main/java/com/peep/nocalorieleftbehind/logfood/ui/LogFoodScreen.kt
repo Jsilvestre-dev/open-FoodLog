@@ -58,7 +58,8 @@ import com.peep.nocalorieleftbehind.core.ui.NutritionUi
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.Ui
+import com.peep.nocalorieleftbehind.core.util.UiElement
 import com.peep.nocalorieleftbehind.logfood.di.LogFoodModule
 import com.peep.nocalorieleftbehind.onboarding.di.OnboardingModule
 import com.peep.nocalorieleftbehind.preference.ui.NutrientData
@@ -74,7 +75,6 @@ fun LogFoodScreen(
 ) {
     val viewModel = koinViewModel<LogFoodViewModel>()
     viewModel.initialize(foodId = foodId)
-    val screenUiState = viewModel.screenUiFlow.collectAsStateWithLifecycle()
     val logFoodUiState = viewModel.logFoodUiFLow.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -129,11 +129,11 @@ fun LogFoodScreen(
         }
     ) { paddingValues ->
         AnimatedContent(
-            targetState = screenUiState
+            targetState = logFoodUiState.value.uiState
         ) { targetUiState ->
-            when (targetUiState.value) {
-                is UiState.Error -> {}
-                is UiState.Loading -> {
+            when (targetUiState) {
+                is Ui.Error -> {}
+                is Ui.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -142,7 +142,7 @@ fun LogFoodScreen(
                     }
                 }
 
-                is UiState.Success<*> -> {
+                is Ui.Success -> {
                     Ui(
                         paddingValues = paddingValues,
                         foodNameUi = { logFoodUiState.value.foodNameUi },
@@ -160,7 +160,7 @@ fun LogFoodScreen(
 @Composable
 private fun Ui(
     paddingValues: PaddingValues,
-    foodNameUi: () -> UiState<String>,
+    foodNameUi: () -> UiElement<String>,
     nutritionUi: () -> NutritionUi,
     onFoodName: (String) -> Unit,
     onMacro: (NutrientData) -> Unit
@@ -202,10 +202,10 @@ private fun Ui(
                 onKeyboardAction = {
                     focusManager.moveFocus(FocusDirection.Down)
                 },
-                isError = foodNameUi() is UiState.Error,
+                isError = foodNameUi() is UiElement.Error,
                 supportingText = {
-                    AnimatedVisibility(foodNameUi() is UiState.Error) {
-                        (foodNameUi() as? UiState.Error)?.messageRes?.let { stringRes ->
+                    AnimatedVisibility(foodNameUi() is UiElement.Error) {
+                        (foodNameUi() as? UiElement.Error)?.messageRes?.let { stringRes ->
                             Text(
                                 fontFamily = notoSansFamily,
                                 text = stringResource(stringRes),
@@ -246,7 +246,7 @@ private fun Ui(
         ) { nutrient ->
 
             val nutrientUi = nutritionUi().getNutrientUi(nutrient)
-            val textFieldState = rememberTextFieldState(initialText = (nutrientUi as? UiState.Success)?.data ?: "")
+            val textFieldState = rememberTextFieldState(initialText = (nutrientUi as? UiElement.Success)?.data ?: "")
             val hasStarted = remember { mutableStateOf(false) }
 
             Row(
@@ -285,7 +285,7 @@ private fun Ui(
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     },
-                    isError = nutrientUi is UiState.Error,
+                    isError = nutrientUi is UiElement.Error,
                     trailingIcon = {
 //                        AnimatedVisibility() {
 //                            IconButton(
@@ -309,8 +309,8 @@ private fun Ui(
                         )
                     },
                     supportingText = {
-                        AnimatedVisibility(nutrientUi is UiState.Error) {
-                            (nutrientUi as? UiState.Error)?.messageRes?.let { stringRes ->
+                        AnimatedVisibility(nutrientUi is UiElement.Error) {
+                            (nutrientUi as? UiElement.Error)?.messageRes?.let { stringRes ->
                                 Text(
                                     fontFamily = notoSansFamily,
                                     text = stringResource(stringRes),
@@ -354,7 +354,7 @@ private fun Preview() {
             Scaffold { paddingValues ->
                 Ui(
                     paddingValues = paddingValues,
-                    foodNameUi = { UiState.Success("") },
+                    foodNameUi = { UiElement.Success("") },
                     nutritionUi = {
                         NutritionUi()
                     },

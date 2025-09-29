@@ -17,13 +17,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.domain.nutrientList
+import com.peep.nocalorieleftbehind.core.ui.NutritionUi
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.onboarding.components.NutrientSelectionUi
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NutrientSelectionScreen(
-    selectedNutrient: () -> List<Nutrient>,
+    nutritionUi: () -> NutritionUi,
     onContinue: () -> Unit,
     onSelectedNutrient: (Nutrient) -> Unit,
 ) {
@@ -52,7 +53,7 @@ fun NutrientSelectionScreen(
     ) { paddingValues ->
         NutrientSelectionUi(
             paddingValues = paddingValues,
-            selectedNutrient = selectedNutrient,
+            selectedNutrients = { nutritionUi().trackedNutrients() },
             onNutrientSelected = onSelectedNutrient,
             selectableNutrients = nutrientList()
         )
@@ -64,7 +65,7 @@ fun NutrientSelectionScreen(
 private fun Preview() {
     NoCalorieLeftBehindTheme {
         NutrientSelectionScreen(
-            selectedNutrient = { Nutrient.entries },
+            nutritionUi = { NutritionUi() },
             onContinue = {},
             onSelectedNutrient = {}
         )

@@ -26,13 +26,13 @@ import androidx.compose.ui.unit.dp
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.summary.ui.NutrientSummary
+import com.peep.nocalorieleftbehind.summary.ui.NutrientSummaryUiState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun MacroSummaryItem(
+fun NutrientSummaryElement(
     modifier: Modifier = Modifier,
-    nutrientSummary: NutrientSummary,
+    nutrientSummaryUiState: NutrientSummaryUiState,
 ) {
     Card(
         modifier = modifier,
@@ -53,15 +53,15 @@ fun MacroSummaryItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = nutrientSummary.eaten.toString(),
-                    style = MaterialTheme.typography.titleLarge,
+                    text = nutrientSummaryUiState.eaten.toString(),
+                    style = MaterialTheme.typography.bodyLarge,
                     fontFamily = notoSansFamily,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     text = "eaten",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontFamily = notoSansFamily,
                 )
             }
@@ -72,14 +72,14 @@ fun MacroSummaryItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(nutrientSummary.nutrient.iconResId),
+                    imageVector = ImageVector.vectorResource(nutrientSummaryUiState.nutrient.iconResId),
                     contentDescription = null,
 
                     )
                 Text(
-                    text = stringResource(nutrientSummary.nutrient.nameResId),
+                    text = stringResource(nutrientSummaryUiState.nutrient.nameResId),
+                    style = MaterialTheme.typography.bodyLarge,
                     fontFamily = notoSansFamily,
-                    style = MaterialTheme.typography.titleSmall
                 )
             }
         }
@@ -90,10 +90,9 @@ fun MacroSummaryItem(
 @Preview
 private fun Preview() {
     NoCalorieLeftBehindTheme {
-
-        MacroSummaryItem(
+        NutrientSummaryElement(
             modifier = Modifier.aspectRatio(1f),
-            nutrientSummary = NutrientSummary(
+            nutrientSummaryUiState = NutrientSummaryUiState(
                 nutrient = Nutrient.PROTEIN,
                 eaten = 82,
                 left = 68,
@@ -101,4 +100,5 @@ private fun Preview() {
             )
         )
     }
+
 }

@@ -27,19 +27,20 @@ import com.peep.nocalorieleftbehind.R
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
-import com.peep.nocalorieleftbehind.summary.ui.NutrientSummary
+import com.peep.nocalorieleftbehind.summary.ui.NutrientSummaryUiState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Header(
-    caloriesSummary: () -> NutrientSummary
+    caloriesSummary: () -> NutrientSummaryUiState
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
-            horizontalAlignment = Alignment.Start
+            modifier = Modifier.fillMaxWidth().weight(.6f),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = stringResource(R.string.calories),
@@ -60,14 +61,14 @@ fun Header(
                     Text(
                         text = caloriesSummary().eaten.toString(),
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.displayLarge,
+                        style = MaterialTheme.typography.displayMedium,
                         fontFamily = montserratFamily,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = caloriesSummary().left.toString(),
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.displayLarge,
+                        style = MaterialTheme.typography.displayMedium,
                         fontFamily = montserratFamily,
                         fontWeight = FontWeight.Bold
                     )
@@ -81,14 +82,14 @@ fun Header(
                     Text(
                         text = "eaten",
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineMedium,
                         fontFamily = montserratFamily,
                     )
 
                     Text(
                         text = "left",
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineMedium,
                         fontFamily = montserratFamily,
                     )
                 }
@@ -98,7 +99,7 @@ fun Header(
 
         CircularWavyProgressIndicator(
             modifier = Modifier
-                .fillMaxWidth()
+                .weight(.4f)
                 .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
                 .aspectRatio(1f),
             progress = { caloriesSummary().let { it.eaten.toFloat() / it.total.toFloat() } },
@@ -128,10 +129,10 @@ private fun Preview() {
     NoCalorieLeftBehindTheme {
         Header(
             caloriesSummary = {
-                NutrientSummary(
+                NutrientSummaryUiState(
                     nutrient = Nutrient.CALORIES,
-                    eaten = 200,
-                    left = 1300,
+                    eaten = 500,
+                    left = 2500,
                     total = 1500
                 )
             }

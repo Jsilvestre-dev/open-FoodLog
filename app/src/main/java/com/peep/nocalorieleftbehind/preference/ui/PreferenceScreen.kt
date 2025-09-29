@@ -46,7 +46,7 @@ import com.peep.nocalorieleftbehind.core.ui.NutritionUi
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.UiElement
 import com.peep.nocalorieleftbehind.onboarding.components.NutrientSelectionUi
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -63,8 +63,8 @@ fun PreferenceScreen() {
         targetState = screenUiState
     ) { screenUi ->
         when (screenUi.value) {
-            is UiState.Error -> {}
-            is UiState.Loading -> {
+            is UiElement.Error -> {}
+            is UiElement.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -73,7 +73,7 @@ fun PreferenceScreen() {
                 }
             }
 
-            is UiState.Success<*> -> {
+            is UiElement.Success<*> -> {
                 SuccessUi(
                     nutritionUi = { nutritionUiState.value },
                     updatedNutrientUi = { updatedNutrientUiState.value },
@@ -89,7 +89,8 @@ fun PreferenceScreen() {
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class,
     ExperimentalMaterial3ExpressiveApi::class
 )
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
@@ -183,7 +184,7 @@ private fun SuccessUi(
                 NutrientSelectionUi(
                     modifier = Modifier.padding(16.dp),
                     selectableNutrients = nutritionUi().untrackedNutrients(),
-                    selectedNutrient = { nutrientSelected.value },
+                    selectedNutrients = { nutrientSelected.value },
                     onNutrientSelected = { nutrient ->
                         nutrientSelected.value.let { nutrientList ->
                             nutrientSelected.value = if (nutrientList.contains(nutrient)) {
@@ -227,10 +228,7 @@ private fun Preview() {
                     NutritionUi()
                 },
                 updatedNutrientUi = {
-                    NutrientUi(
-                        nutrient = Nutrient.CALORIES,
-                        ui = UiState.Loading
-                    )
+                    null
                 },
                 onNutrientsSelected = {},
                 onInput = {},

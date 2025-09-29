@@ -48,13 +48,13 @@ import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.UiElement
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.NutrientDialog(
     nutrient: () -> Nutrient?,
-    nutrientUiState: () -> UiState<String>?,
+    nutrientUiState: () -> UiElement<String>?,
     onInput: (NutrientData) -> Unit,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
@@ -104,7 +104,7 @@ fun SharedTransitionScope.NutrientDialog(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     val textFieldState =
-                        rememberTextFieldState(initialText = (nutrientUiState as? UiState.Success)?.data ?: "")
+                        rememberTextFieldState(initialText = (nutrientUiState as? UiElement.Success)?.data ?: "")
                     Column(
                         modifier = Modifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -139,7 +139,7 @@ fun SharedTransitionScope.NutrientDialog(
                             onKeyboardAction = {
                                 focusManager.clearFocus()
                             },
-                            isError = nutrientUiState is UiState.Error,
+                            isError = nutrientUiState is UiElement.Error,
                             suffix = {
                                 Text(
                                     text = nutrient.unit,
@@ -149,8 +149,8 @@ fun SharedTransitionScope.NutrientDialog(
                                 )
                             },
                             supportingText = {
-                                AnimatedVisibility(nutrientUiState is UiState.Error) {
-                                    (nutrientUiState as? UiState.Error)?.messageRes?.let { stringRes ->
+                                AnimatedVisibility(nutrientUiState is UiElement.Error) {
+                                    (nutrientUiState as? UiElement.Error)?.messageRes?.let { stringRes ->
                                         Text(
                                             fontFamily = notoSansFamily,
                                             text = stringResource(stringRes),
@@ -180,7 +180,7 @@ fun SharedTransitionScope.NutrientDialog(
                             TextButton(
                                 modifier = Modifier.width(100.dp),
                                 onClick = onSave,
-                                enabled = nutrientUiState is UiState.Success
+                                enabled = nutrientUiState is UiElement.Success
                             ) {
                                 Text(
                                     text = stringResource(R.string.save),
@@ -221,7 +221,7 @@ private fun Preview() {
             AnimatedVisibility(true) {
                 NutrientDialog(
                     nutrient = { Nutrient.CALORIES },
-                    nutrientUiState = { UiState.Success("100") },
+                    nutrientUiState = { UiElement.Success("100") },
                     onInput = {},
                     onDismiss = {},
                     onSave = {}

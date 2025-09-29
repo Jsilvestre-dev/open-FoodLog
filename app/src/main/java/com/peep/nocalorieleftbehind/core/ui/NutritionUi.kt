@@ -2,31 +2,31 @@ package com.peep.nocalorieleftbehind.core.ui
 
 import androidx.compose.runtime.Immutable
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
-import com.peep.nocalorieleftbehind.core.util.UiState
+import com.peep.nocalorieleftbehind.core.util.UiElement
 
 @Immutable
 data class NutritionUi(
-    val calories: UiState<String> = UiState.Loading,
-    val protein: UiState<String>? = null,
-    val carbs: UiState<String>? = null,
-    val fats: UiState<String>? = null
+    val calories: UiElement<String> = UiElement.Loading,
+    val protein: UiElement<String>? = null,
+    val carbs: UiElement<String>? = null,
+    val fats: UiElement<String>? = null
 ) {
 
     fun areAllNutrientsValid(): Boolean {
-        val isProteinValid = protein?.let { it is UiState.Success } ?: true
-        val isCarbsValid = carbs?.let { it is UiState.Success } ?: true
-        val isFatsValid = fats?.let { it is UiState.Success } ?: true
-        return calories is UiState.Success && isProteinValid && isCarbsValid && isFatsValid
+        val isProteinValid = protein?.let { it is UiElement.Success } ?: true
+        val isCarbsValid = carbs?.let { it is UiElement.Success } ?: true
+        val isFatsValid = fats?.let { it is UiElement.Success } ?: true
+        return calories is UiElement.Success && isProteinValid && isCarbsValid && isFatsValid
     }
 
-    fun updateNutrientUi(nutrient: Nutrient, uiState: UiState<String>?) = when (nutrient) {
+    fun updateNutrientUi(nutrient: Nutrient, uiState: UiElement<String>?) = when (nutrient) {
         Nutrient.CALORIES -> if (uiState != null) copy(calories = uiState) else this
         Nutrient.PROTEIN -> copy(protein = uiState)
         Nutrient.FATS -> copy(fats = uiState)
         Nutrient.CARBS -> copy(carbs = uiState)
     }
 
-    fun getNutrientUi(nutrient: Nutrient): UiState<String>? = when (nutrient) {
+    fun getNutrientUi(nutrient: Nutrient): UiElement<String>? = when (nutrient) {
         Nutrient.CALORIES -> calories
         Nutrient.PROTEIN -> protein
         Nutrient.FATS -> fats
