@@ -1,17 +1,18 @@
 package com.peep.nocalorieleftbehind.logfood.ui
 
 import androidx.compose.runtime.Immutable
-import com.peep.nocalorieleftbehind.core.ui.NutritionUi
-import com.peep.nocalorieleftbehind.core.util.Ui
-import com.peep.nocalorieleftbehind.core.util.UiElement
+import com.peep.nocalorieleftbehind.core.ui.model.NameUiState
+import com.peep.nocalorieleftbehind.core.ui.model.NutritionUiState
+import com.peep.nocalorieleftbehind.core.util.State
 
 @Immutable
 data class LogFoodUi(
-    val uiState: Ui = Ui.Loading,
-    val foodNameUi: UiElement<String> = UiElement.Loading,
-    val nutritionUi: NutritionUi = NutritionUi(),
+    val state: State = State.Loading,
+    val nameUiState: NameUiState = NameUiState(),
+    val nutritionUi: NutritionUiState = NutritionUiState(),
+    val errorMessage: Int? = null
 ) {
 
     fun isLogFoodUiValid(): Boolean =
-        foodNameUi is UiElement.Success && nutritionUi.areAllNutrientsValid()
+        nameUiState.state is State.Success && nutritionUi.areAllNutrientsValid()
 }

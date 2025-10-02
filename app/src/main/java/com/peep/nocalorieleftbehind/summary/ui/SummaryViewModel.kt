@@ -3,12 +3,14 @@ package com.peep.nocalorieleftbehind.summary.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.map
-import com.peep.nocalorieleftbehind.core.util.Ui
+import com.peep.nocalorieleftbehind.R
+import com.peep.nocalorieleftbehind.core.util.State
 import com.peep.nocalorieleftbehind.core.util.Utils
-import com.peep.nocalorieleftbehind.logfood.data.FoodRepository
-import com.peep.nocalorieleftbehind.preference.data.PreferenceRepository
+import com.peep.nocalorieleftbehind.core.data.repository.FoodRepository
+import com.peep.nocalorieleftbehind.core.data.repository.PreferenceRepository
 import com.peep.nocalorieleftbehind.summary.data.toFoodUi
 import com.peep.nocalorieleftbehind.summary.data.toSummaryUi
+import com.peep.nocalorieleftbehind.summary.ui.model.SummaryUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,35 +30,31 @@ class SummaryViewModel(
     init {
         viewModelScope.launch {
             foodRepository
-                .getFoodsOnDay(timeStampEpochSec = Utils.todayMidnightTimestamp())
+                .getFoodsByTime(timeStampEpochSec = Utils.todayMidnightTimestamp())
                 .combineTransform(
                     flow = preferenceRepository.getPreference()
                 ) { foodFromToday, preferences ->
                     if (preferences == null) throw NullPointerException()
 
-                    emit(toSummaryUi(foodsEaten = foodFromToday, preferences = preferences))
+                    emit(toSummaryUi(foodsEaten = foodFromToday, preference = preferences))
                 }.catch {
-                    _ui.update { Ui.Error }
+                    _summaryUiState.update { it.copy(state = State.Error, errorMessage = R.string.try_refreshing) }
                 }.collect { summaryUiState ->
                     _summaryUiState.update { summaryUiState }
-                    _ui.update { Ui.Success }
                 }
         }
     }
-
-    private val _ui: MutableStateFlow<Ui> = MutableStateFlow(Ui.Loading)
-    val ui = _ui.asStateFlow()
 
     private val _summaryUiState: MutableStateFlow<SummaryUiState> = MutableStateFlow(SummaryUiState.default)
     val summaryUiState: StateFlow<SummaryUiState> = _summaryUiState.asStateFlow()
 
     fun deleteFood(id: Long) {
         viewModelScope.launch {
-            foodRepository.deleteFood(id)
+            foodRepository.removeFoodWithId(id)
         }
     }
 
-    val foodEatenPagingData = foodRepository.recentFoods(viewModelScope).map { pagingData ->
+    val recentFoodsPagingData = foodRepository.recentFoods(viewModelScope).map { pagingData ->
         pagingData.map { food ->
             food.toFoodUi()
         }

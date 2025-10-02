@@ -1,13 +1,16 @@
-package com.peep.nocalorieleftbehind.summary.ui
+package com.peep.nocalorieleftbehind.summary.ui.model
 
 import androidx.compose.runtime.Immutable
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
+import com.peep.nocalorieleftbehind.core.util.State
 
 @Immutable
 data class SummaryUiState(
+    val state: State = State.Loading,
     val calories: NutrientSummaryUiState,
     val nutrientSummaryList: List<NutrientSummaryUiState>,
-    val date: String
+    val date: String,
+    val errorMessage: Int? = null
 ) {
     companion object {
         val default = SummaryUiState(

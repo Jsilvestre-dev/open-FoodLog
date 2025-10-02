@@ -1,5 +1,5 @@
 package com.peep.nocalorieleftbehind.core.domain.model
 
-data class Preferences(
+data class Preference(
     val nutrition: Nutrition
 )

@@ -18,7 +18,7 @@ object Onboarding : Screen {
     object NutrientSelection
 
     @Serializable
-    object NutrientTargets
+    object SetNutrientGoal
 }
 
 interface Screen

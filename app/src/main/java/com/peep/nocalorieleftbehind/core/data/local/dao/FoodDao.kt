@@ -11,19 +11,19 @@ import kotlinx.coroutines.flow.Flow
 interface FoodDao {
 
     @Upsert
-    suspend fun upsertFood(foodEntity: FoodEntity): Long
+    suspend fun upsertFoodEntity(foodEntity: FoodEntity): Long
 
     @Query("DELETE FROM FoodEntity WHERE id = :id")
     suspend fun deleteFoodEntityById(id: Long): Int
 
 
     @Query("SELECT * FROM FoodEntity WHERE id = :foodId")
-    suspend fun findFoodById(foodId: Long): FoodEntity
+    suspend fun readFoodEntityById(foodId: Long): FoodEntity
 
     @Query("SELECT * FROM FoodEntity WHERE timeStampEpochSec = :timeStampEpochSec ")
-    fun getFoodByTimeStamp(timeStampEpochSec: Long): Flow<List<FoodEntity>?>
+    fun readFoodEntitiesByTime(timeStampEpochSec: Long): Flow<List<FoodEntity>?>
 
     @Query("SELECT * FROM FoodEntity ORDER BY id DESC")
-    fun recentFoodPagingSource(): PagingSource<Int, FoodEntity>
+    fun readRecentFoodPagingSource(): PagingSource<Int, FoodEntity>
 
 }

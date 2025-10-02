@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.onboarding.components
+package com.peep.nocalorieleftbehind.onboarding.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -29,7 +29,7 @@ import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.rectangle
 import androidx.graphics.shapes.star
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
-import com.peep.nocalorieleftbehind.core.ui.MorphPolygonShape
+import com.peep.nocalorieleftbehind.core.util.MorphPolygonShape
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
 

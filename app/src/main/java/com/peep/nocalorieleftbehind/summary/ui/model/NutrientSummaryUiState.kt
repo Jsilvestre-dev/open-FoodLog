@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.summary.ui
+package com.peep.nocalorieleftbehind.summary.ui.model
 
 import androidx.compose.runtime.Immutable
 import com.peep.nocalorieleftbehind.core.domain.Nutrient

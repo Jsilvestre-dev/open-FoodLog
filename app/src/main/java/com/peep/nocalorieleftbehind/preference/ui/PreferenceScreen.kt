@@ -42,12 +42,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peep.nocalorieleftbehind.R
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
-import com.peep.nocalorieleftbehind.core.ui.NutritionUi
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientInput
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientUiState
+import com.peep.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiElement
-import com.peep.nocalorieleftbehind.onboarding.components.NutrientSelectionUi
+import com.peep.nocalorieleftbehind.core.util.State
+import com.peep.nocalorieleftbehind.onboarding.ui.components.NutrientSelectionUi
+import com.peep.nocalorieleftbehind.preference.ui.components.NutrientDialog
+import com.peep.nocalorieleftbehind.preference.ui.components.PreferenceCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -55,16 +59,15 @@ import org.koin.compose.viewmodel.koinViewModel
 fun PreferenceScreen() {
 
     val viewModel = koinViewModel<PreferenceViewModel>()
-    val screenUiState = viewModel.screenUiFlow.collectAsStateWithLifecycle()
-    val nutritionUiState = viewModel.nutritionUi.collectAsStateWithLifecycle()
-    val updatedNutrientUiState = viewModel.updatedNutrientUiFlow.collectAsStateWithLifecycle()
+    val preferenceUiState = viewModel.preferenceUiState.collectAsStateWithLifecycle()
+    val selectedNutrientUiState = viewModel.selectedNutrientUiState.collectAsStateWithLifecycle()
 
     AnimatedContent(
-        targetState = screenUiState
-    ) { screenUi ->
-        when (screenUi.value) {
-            is UiElement.Error -> {}
-            is UiElement.Loading -> {
+        targetState = preferenceUiState.value.state
+    ) { targetState ->
+        when (targetState) {
+            is State.Error -> {}
+            is State.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -73,13 +76,13 @@ fun PreferenceScreen() {
                 }
             }
 
-            is UiElement.Success<*> -> {
+            is State.Success -> {
                 SuccessUi(
-                    nutritionUi = { nutritionUiState.value },
-                    updatedNutrientUi = { updatedNutrientUiState.value },
-                    onNutrientsSelected = viewModel::onSelected,
+                    nutritionUi = { preferenceUiState.value.nutritionUiState },
+                    selectedNutrientUiState = { selectedNutrientUiState.value },
+                    onTrackNutrients = viewModel::onTrackNutrients,
                     onInput = viewModel::onInput,
-                    onUpdateNutrient = viewModel::onUpdateNutrientUi,
+                    onEditNutrient = viewModel::onEditNutrient,
                     onSave = viewModel::savePreference,
                     onRemove = viewModel::onRemove
                 )
@@ -96,11 +99,11 @@ fun PreferenceScreen() {
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 private fun SuccessUi(
-    nutritionUi: () -> NutritionUi,
-    updatedNutrientUi: () -> NutrientUi?,
-    onNutrientsSelected: (List<Nutrient>) -> Unit,
-    onInput: (NutrientData) -> Unit,
-    onUpdateNutrient: (Nutrient?) -> Unit,
+    nutritionUi: () -> NutritionUiState,
+    selectedNutrientUiState: () -> NutrientUiState?,
+    onTrackNutrients: (List<Nutrient>) -> Unit,
+    onInput: (NutrientInput) -> Unit,
+    onEditNutrient: (Nutrient?) -> Unit,
     onSave: () -> Unit,
     onRemove: (Nutrient) -> Unit
 ) {
@@ -146,12 +149,11 @@ private fun SuccessUi(
                 ) { nutrient ->
                     PreferenceCard(
                         modifier = Modifier.animateItem(),
-                        nutrientBeingUpdated = { updatedNutrientUi()?.nutrient },
-                        nutrient = nutrient,
-                        nutrientUiState = { nutritionUi().getNutrientUi(nutrient)!! },
+                        selectedNutrient = { selectedNutrientUiState()?.nutrient },
+                        nutrientUiState = nutritionUi().getNutrientUi(nutrient)!!,
                         onRemove = onRemove,
                         onEdit = {
-                            onUpdateNutrient(nutrient)
+                            onEditNutrient(nutrient)
                         }
                     )
                 }
@@ -159,13 +161,15 @@ private fun SuccessUi(
         }
 
         NutrientDialog(
-            nutrient = { updatedNutrientUi()?.nutrient },
-            nutrientUiState = { updatedNutrientUi()?.ui },
+            nutrientUiState = selectedNutrientUiState,
             onInput = onInput,
             onDismiss = {
-                onUpdateNutrient(null)
+                onEditNutrient(null)
             },
-            onSave = onSave
+            onSave = {
+                onSave()
+                onEditNutrient(null)
+            }
         )
     }
 
@@ -184,8 +188,8 @@ private fun SuccessUi(
                 NutrientSelectionUi(
                     modifier = Modifier.padding(16.dp),
                     selectableNutrients = nutritionUi().untrackedNutrients(),
-                    selectedNutrients = { nutrientSelected.value },
-                    onNutrientSelected = { nutrient ->
+                    trackedNutrients = { nutrientSelected.value },
+                    onTrackNutrient = { nutrient ->
                         nutrientSelected.value.let { nutrientList ->
                             nutrientSelected.value = if (nutrientList.contains(nutrient)) {
                                 nutrientList.minus(nutrient)
@@ -202,7 +206,7 @@ private fun SuccessUi(
                 ) {
                     Button(
                         onClick = {
-                            onNutrientsSelected(nutrientSelected.value)
+                            onTrackNutrients(nutrientSelected.value)
                             showBottomSheet.value = false
                         }
                     ) {
@@ -225,14 +229,14 @@ private fun Preview() {
         AnimatedVisibility(visible = true) {
             SuccessUi(
                 nutritionUi = {
-                    NutritionUi()
+                    NutritionUiState()
                 },
-                updatedNutrientUi = {
+                selectedNutrientUiState = {
                     null
                 },
-                onNutrientsSelected = {},
+                onTrackNutrients = {},
                 onInput = {},
-                onUpdateNutrient = {},
+                onEditNutrient = {},
                 onSave = {},
                 onRemove = {}
             )

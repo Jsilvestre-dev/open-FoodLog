@@ -1,6 +1,7 @@
-package com.peep.nocalorieleftbehind.onboarding
+package com.peep.nocalorieleftbehind.onboarding.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,24 +46,23 @@ import androidx.compose.ui.unit.dp
 import com.peep.nocalorieleftbehind.core.di.CoreModule
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.domain.nutrientList
-import com.peep.nocalorieleftbehind.core.ui.NutritionUi
+import com.peep.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.Ui
-import com.peep.nocalorieleftbehind.core.util.UiElement
+import com.peep.nocalorieleftbehind.core.util.State
 import com.peep.nocalorieleftbehind.onboarding.di.OnboardingModule
-import com.peep.nocalorieleftbehind.preference.ui.NutrientData
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientInput
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun NutrientTargetsScreen(
-    ui: () -> Ui,
-    selectedNutrient: () -> List<Nutrient>,
-    nutritionUi: () -> NutritionUi,
-    onInput: (NutrientData) -> Unit,
+fun SetNutrientGoalScreen(
+    state: () -> State,
+    trackedNutrients: () -> List<Nutrient>,
+    nutritionUiState: () -> NutritionUiState,
+    onNutrientGoalInput: (NutrientInput) -> Unit,
     onSave: () -> Unit,
 ) {
 
@@ -107,14 +107,14 @@ fun NutrientTargetsScreen(
     ) { paddingValues ->
 
         AnimatedContent(
-            targetState = ui()
+            targetState = state()
         ) { uiTarget ->
             when (uiTarget) {
-                is Ui.Error -> {
+                is State.Error -> {
 
                 }
 
-                is Ui.Loading -> {
+                is State.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -123,12 +123,12 @@ fun NutrientTargetsScreen(
                     }
                 }
 
-                is Ui.Success -> {
+                is State.Success -> {
                     SuccessfulUI(
                         paddingValues = paddingValues,
-                        selectedNutrient = selectedNutrient,
-                        nutritionUi = nutritionUi,
-                        onInput = onInput,
+                        trackedNutrients = trackedNutrients,
+                        nutritionUi = nutritionUiState,
+                        onNutrientGoalInput = onNutrientGoalInput,
                     )
                 }
             }
@@ -140,9 +140,9 @@ fun NutrientTargetsScreen(
 @Composable
 private fun SuccessfulUI(
     paddingValues: PaddingValues,
-    selectedNutrient: () -> List<Nutrient>,
-    nutritionUi: () -> NutritionUi,
-    onInput: (NutrientData) -> Unit,
+    trackedNutrients: () -> List<Nutrient>,
+    nutritionUi: () -> NutritionUiState,
+    onNutrientGoalInput: (NutrientInput) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -152,12 +152,12 @@ private fun SuccessfulUI(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = selectedNutrient(),
+            items = trackedNutrients(),
             key = { it.name },
             contentType = { nutritionUi().getNutrientUi(it) }
         ) { nutrient ->
 
-            val nutrientUiState = nutritionUi().getNutrientUi(nutrient)
+            val nutrientUiState = nutritionUi().getNutrientUi(nutrient) ?: return@items
             val textFieldState = rememberTextFieldState()
             val hasStarted = remember { mutableStateOf(false) }
 
@@ -176,7 +176,7 @@ private fun SuccessfulUI(
 
                 OutlinedTextField(
                     modifier = Modifier.weight(.6f),
-                    isError = nutrientUiState is UiElement.Error,
+                    isError = nutrientUiState.state is State.Error,
                     labelPosition = TextFieldLabelPosition.Attached(),
                     label = {
                         if (nutrient != Nutrient.CALORIES) {
@@ -201,10 +201,10 @@ private fun SuccessfulUI(
                         )
                     },
                     supportingText = {
-                        if (nutrientUiState is UiElement.Error) {
-                            nutrientUiState.messageRes?.let {
+                        AnimatedVisibility(visible = nutrientUiState.state is State.Error) {
+                            nutrientUiState.errorMessage?.let { errorMessage ->
                                 Text(
-                                    text = stringResource(nutrientUiState.messageRes),
+                                    text = stringResource(errorMessage),
                                     fontFamily = notoSansFamily,
                                 )
                             }
@@ -217,9 +217,9 @@ private fun SuccessfulUI(
             textFieldState.text.toString().let { text ->
                 LaunchedEffect(text) {
                     if (hasStarted.value) {
-                        onInput(
-                            NutrientData(
-                                value = text,
+                        onNutrientGoalInput(
+                            NutrientInput(
+                                amount = text,
                                 nutrient = nutrient
                             )
                         )
@@ -245,9 +245,9 @@ private fun PreviewSuccessfulUi() {
             NoCalorieLeftBehindTheme {
                 SuccessfulUI(
                     paddingValues = paddingValues,
-                    selectedNutrient = { nutrientList(true) },
-                    nutritionUi = { NutritionUi() },
-                    onInput = {},
+                    trackedNutrients = { nutrientList(true) },
+                    nutritionUi = { NutritionUiState() },
+                    onNutrientGoalInput = {},
                 )
             }
         }

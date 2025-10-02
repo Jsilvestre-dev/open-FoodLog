@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Entity
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
-data class PreferencesEntity(
+data class PreferenceEntity(
     @PrimaryKey
     @EncodeDefault
     val id: Int = 1,

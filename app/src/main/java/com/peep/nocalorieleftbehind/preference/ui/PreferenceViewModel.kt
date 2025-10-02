@@ -2,18 +2,21 @@ package com.peep.nocalorieleftbehind.preference.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peep.nocalorieleftbehind.R
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
-import com.peep.nocalorieleftbehind.core.domain.ValidateNutrientUseCase
-import com.peep.nocalorieleftbehind.core.domain.model.Preferences
-import com.peep.nocalorieleftbehind.core.ui.NutritionUi
+import com.peep.nocalorieleftbehind.core.domain.ValidateNutrientAmountUseCase
+import com.peep.nocalorieleftbehind.core.domain.model.Preference
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientUiState
 import com.peep.nocalorieleftbehind.core.ui.toNutrition
 import com.peep.nocalorieleftbehind.core.ui.toNutritionUi
-import com.peep.nocalorieleftbehind.core.util.UiElement
-import com.peep.nocalorieleftbehind.preference.data.PreferenceRepository
+import com.peep.nocalorieleftbehind.core.util.State
+import com.peep.nocalorieleftbehind.core.data.repository.PreferenceRepository
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -21,76 +24,83 @@ import kotlinx.coroutines.launch
 
 class PreferenceViewModel(
     private val preferenceRepository: PreferenceRepository,
-    private val validateNutrientUseCase: ValidateNutrientUseCase
+    private val validateNutrientAmountUseCase: ValidateNutrientAmountUseCase
 ) : ViewModel() {
+    private val _selectedNutrientUiState = MutableStateFlow<NutrientUiState?>(null)
+    val selectedNutrientUiState = _selectedNutrientUiState.asStateFlow()
 
-    private val _screenUiFlow: MutableStateFlow<UiElement<*>> = MutableStateFlow(UiElement.Success(null))
-    val screenUiFlow = _screenUiFlow.asStateFlow()
-
-    private val _updatedNutrientUiFlow = MutableStateFlow<NutrientUi?>(null)
-    val updatedNutrientUiFlow = _updatedNutrientUiFlow.asStateFlow()
-
-    private val _nutritionUiFlow = preferenceRepository
+    private val _preferenceUiState = preferenceRepository
         .getPreference()
         .map { preferences ->
-            preferences?.nutrition?.toNutritionUi() ?: NutritionUi()
+            preferences ?: throw NullPointerException()
+
+            PreferenceUiState(
+                state = State.Success,
+                nutritionUiState = preferences.nutrition.toNutritionUi()
+            )
+        }.catch {
+            PreferenceUiState(
+                state = State.Error,
+                errorMessage = R.string.try_refreshing
+            )
         }
-    val nutritionUi: StateFlow<NutritionUi> = _nutritionUiFlow.stateIn(
+
+    val preferenceUiState: StateFlow<PreferenceUiState> = _preferenceUiState.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = NutritionUi()
+        initialValue = PreferenceUiState()
     )
 
-    fun onUpdateNutrientUi(nutrient: Nutrient?) {
+    fun onEditNutrient(nutrient: Nutrient?) {
         viewModelScope.launch {
 
-            if (nutrient == null) return@launch _updatedNutrientUiFlow.update { null }
+            if (nutrient == null) return@launch _selectedNutrientUiState.update { null }
 
-            _updatedNutrientUiFlow.update { nutritionUi ->
-                NutrientUi(
-                    nutrient = nutrient,
-                    ui = this@PreferenceViewModel.nutritionUi.value.getNutrientUi(nutrient) ?: UiElement.Loading
-                )
+            _selectedNutrientUiState.update {
+                preferenceUiState.value.nutritionUiState.getNutrientUi(nutrient)
             }
+            println("onEditNutrient ${_selectedNutrientUiState.value}")
         }
     }
 
-    fun onSelected(selectedNutrients: List<Nutrient>) {
+    fun onTrackNutrients(selectedNutrients: List<Nutrient>) {
         viewModelScope.launch {
             if (selectedNutrients.isEmpty()) return@launch
 
-            var currentNutritionUi = nutritionUi.value
+            var nutritionUiState = preferenceUiState.value.nutritionUiState
             selectedNutrients.forEach { nutrient ->
-                currentNutritionUi = currentNutritionUi.updateNutrientUi(nutrient = nutrient, UiElement.Success("0"))
+                nutritionUiState =
+                    nutritionUiState.updateNutrient(
+                        nutrient = nutrient,
+                        nutrientUiState = NutrientUiState(nutrient = nutrient, data = "0")
+                    )
             }
 
-            preferenceRepository.savePreference(
-                Preferences(
-                    nutrition = currentNutritionUi.toNutrition()
+            preferenceRepository.updatePreference(
+                Preference(
+                    nutrition = nutritionUiState.toNutrition()
                 )
             )
         }
     }
 
-    fun onInput(nutrientData: NutrientData) {
+    fun onInput(nutrientInput: NutrientInput) {
         viewModelScope.launch {
-            val validatedNutrientValue = validateNutrientUseCase(nutrientData.value)
+            val validatedNutrientValue =
+                validateNutrientAmountUseCase(nutrientInput)
 
-            _updatedNutrientUiFlow.update { nutritionUi ->
-                NutrientUi(
-                    nutrient = nutrientData.nutrient,
-                    ui = validatedNutrientValue
-                )
+            _selectedNutrientUiState.update { nutritionUi ->
+                validatedNutrientValue
             }
         }
     }
 
     fun onRemove(nutrient: Nutrient) {
         viewModelScope.launch {
-            val currentNutritionUi = nutritionUi.value.updateNutrientUi(nutrient = nutrient, uiState = null)
+            val currentNutritionUi = preferenceUiState.value.nutritionUiState.removeNutrient(nutrient)
 
-            preferenceRepository.savePreference(
-                Preferences(
+            preferenceRepository.updatePreference(
+                Preference(
                     nutrition = currentNutritionUi.toNutrition()
                 )
             )
@@ -99,28 +109,28 @@ class PreferenceViewModel(
 
     fun savePreference() {
         viewModelScope.launch {
-            _screenUiFlow.update { UiElement.Loading }
 
-            val currentUpdatedNutrientUi = _updatedNutrientUiFlow.value
+            val nutrientUiState = _selectedNutrientUiState.value
 
-            if (currentUpdatedNutrientUi == null || currentUpdatedNutrientUi.ui !is UiElement.Success) return@launch _screenUiFlow.update {
-                UiElement.Success(
-                    null
-                )
+            _preferenceUiState.map { it.copy(state = State.Loading) }
+
+            if (nutrientUiState == null || nutrientUiState.state !is State.Success) {
+                _preferenceUiState.map { it.copy(state = State.Success) }
+                return@launch
             }
 
-            val nutrition = nutritionUi.value.toNutrition().updateNutrient(
-                nutrient = currentUpdatedNutrientUi.nutrient,
-                value = currentUpdatedNutrientUi.ui.data.toInt()
-            )
+            val nutrition = preferenceUiState.value.nutritionUiState.updateNutrient(
+                nutrient = nutrientUiState.nutrient,
+                nutrientUiState = nutrientUiState
+            ).toNutrition()
 
-            preferenceRepository.savePreference(
-                Preferences(
+            preferenceRepository.updatePreference(
+                Preference(
                     nutrition = nutrition
                 )
             )
 
-            _screenUiFlow.update { UiElement.Success(null) }
+            _preferenceUiState.map { it.copy(state = State.Success) }
         }
     }
 }

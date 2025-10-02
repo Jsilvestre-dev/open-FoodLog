@@ -3,16 +3,16 @@ package com.peep.nocalorieleftbehind.core.data.local.dao
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
-import com.peep.nocalorieleftbehind.core.data.local.entity.PreferencesEntity
+import com.peep.nocalorieleftbehind.core.data.local.entity.PreferenceEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PreferenceDao {
 
     @Upsert
-    suspend fun upsertPreference(intakeTargetsEntity: PreferencesEntity)
+    suspend fun upsertPreferenceEntity(preferenceEntity: PreferenceEntity)
 
-    @Query("SELECT * FROM PreferencesEntity")
-    fun getPreference(): Flow<PreferencesEntity?>
+    @Query("SELECT * FROM PreferenceEntity")
+    fun readPreferenceEntity(): Flow<PreferenceEntity?>
 
 }

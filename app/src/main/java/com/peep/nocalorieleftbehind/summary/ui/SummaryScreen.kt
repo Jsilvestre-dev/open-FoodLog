@@ -47,10 +47,12 @@ import com.peep.nocalorieleftbehind.R
 import com.peep.nocalorieleftbehind.core.domain.model.Nutrition
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
-import com.peep.nocalorieleftbehind.core.util.Ui
+import com.peep.nocalorieleftbehind.core.util.State
 import com.peep.nocalorieleftbehind.summary.ui.compnents.FoodEatenCard
 import com.peep.nocalorieleftbehind.summary.ui.compnents.Header
 import com.peep.nocalorieleftbehind.summary.ui.compnents.NutrientSummaryElement
+import com.peep.nocalorieleftbehind.summary.ui.model.FoodUi
+import com.peep.nocalorieleftbehind.summary.ui.model.SummaryUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.compose.KoinApplicationPreview
 import org.koin.compose.viewmodel.koinViewModel
@@ -63,16 +65,15 @@ fun SummaryScreen(
     onNavigateToPreference: () -> Unit,
 ) {
     val viewModel = koinViewModel<SummaryViewModel>()
-    val uiState = viewModel.ui.collectAsStateWithLifecycle()
     val summaryUiState = viewModel.summaryUiState.collectAsStateWithLifecycle()
-    val foodEatenPagingItems = viewModel.foodEatenPagingData.collectAsLazyPagingItems()
+    val recentFoodsLazyPagingItems = viewModel.recentFoodsPagingData.collectAsLazyPagingItems()
 
     AnimatedContent(
-        targetState = uiState.value
-    ) { targetUiState ->
-        when (targetUiState) {
-            is Ui.Error -> {}
-            is Ui.Loading -> {
+        targetState = summaryUiState.value.state
+    ) { targetState ->
+        when (targetState) {
+            is State.Error -> {}
+            is State.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -81,9 +82,9 @@ fun SummaryScreen(
                 }
             }
 
-            is Ui.Success -> {
+            is State.Success -> {
                 Ui(
-                    lazyPagingItems = { foodEatenPagingItems },
+                    lazyPagingItems = { recentFoodsLazyPagingItems },
                     summaryUiState = { summaryUiState.value },
                     onDeleteFood = viewModel::deleteFood,
                     onEditFood = onEditFood,
@@ -172,7 +173,9 @@ private fun Ui(
                     style = MaterialTheme.typography.titleLarge
                 )
 
-                Spacer(modifier = Modifier.fillMaxWidth().height(12.dp))
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp))
 
                 FlowColumn(
                     modifier = Modifier.aspectRatio(3f),

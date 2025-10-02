@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.onboarding
+package com.peep.nocalorieleftbehind.onboarding.ui
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -17,16 +17,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.domain.nutrientList
-import com.peep.nocalorieleftbehind.core.ui.NutritionUi
+import com.peep.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
-import com.peep.nocalorieleftbehind.onboarding.components.NutrientSelectionUi
+import com.peep.nocalorieleftbehind.onboarding.ui.components.NutrientSelectionUi
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NutrientSelectionScreen(
-    nutritionUi: () -> NutritionUi,
+    nutritionUiState: () -> NutritionUiState,
     onContinue: () -> Unit,
-    onSelectedNutrient: (Nutrient) -> Unit,
+    onTrackNutrient: (Nutrient) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.safeDrawingPadding(),
@@ -53,8 +53,8 @@ fun NutrientSelectionScreen(
     ) { paddingValues ->
         NutrientSelectionUi(
             paddingValues = paddingValues,
-            selectedNutrients = { nutritionUi().trackedNutrients() },
-            onNutrientSelected = onSelectedNutrient,
+            trackedNutrients = { nutritionUiState().trackedNutrients() },
+            onTrackNutrient = onTrackNutrient,
             selectableNutrients = nutrientList()
         )
     }
@@ -65,9 +65,9 @@ fun NutrientSelectionScreen(
 private fun Preview() {
     NoCalorieLeftBehindTheme {
         NutrientSelectionScreen(
-            nutritionUi = { NutritionUi() },
+            nutritionUiState = { NutritionUiState() },
             onContinue = {},
-            onSelectedNutrient = {}
+            onTrackNutrient = {}
         )
     }
 }

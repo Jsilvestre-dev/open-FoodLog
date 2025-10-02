@@ -27,7 +27,7 @@ import com.peep.nocalorieleftbehind.core.domain.model.Nutrition
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.summary.ui.FoodUi
+import com.peep.nocalorieleftbehind.summary.ui.model.FoodUi
 
 @Composable
 fun FoodEatenCard(

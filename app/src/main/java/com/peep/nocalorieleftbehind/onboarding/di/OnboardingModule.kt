@@ -1,6 +1,6 @@
 package com.peep.nocalorieleftbehind.onboarding.di
 
-import com.peep.nocalorieleftbehind.onboarding.OnboardingViewModel
+import com.peep.nocalorieleftbehind.onboarding.ui.OnboardingViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 

@@ -5,7 +5,7 @@ import androidx.paging.PagingConfig
 import com.peep.nocalorieleftbehind.core.data.local.dao.FoodDao
 import com.peep.nocalorieleftbehind.core.data.local.dao.PreferenceDao
 import com.peep.nocalorieleftbehind.core.data.local.entity.FoodEntity
-import com.peep.nocalorieleftbehind.core.data.local.entity.PreferencesEntity
+import com.peep.nocalorieleftbehind.core.data.local.entity.PreferenceEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -15,43 +15,43 @@ class NutritionLogLocalDataSourceImpl(
     private val preferenceDao: PreferenceDao,
     private val foodDao: FoodDao,
 ) : NutritionLogLocalDataSource {
-    override suspend fun upsertPreference(preferencesEntity: PreferencesEntity) {
+    override suspend fun upsertPreferenceEntity(preferenceEntity: PreferenceEntity) {
         withContext(Dispatchers.IO) {
-            preferenceDao.upsertPreference(preferencesEntity)
+            preferenceDao.upsertPreferenceEntity(preferenceEntity = preferenceEntity)
         }
     }
 
-    override fun queryPreference(): Flow<PreferencesEntity?> = preferenceDao.getPreference().flowOn(Dispatchers.IO)
+    override fun readPreferenceEntity(): Flow<PreferenceEntity?> =
+        preferenceDao.readPreferenceEntity().flowOn(Dispatchers.IO)
 
-    override suspend fun upsertFood(foodEntity: FoodEntity) {
+    override suspend fun upsertFoodEntity(foodEntity: FoodEntity) {
         withContext(Dispatchers.IO) {
-            foodDao.upsertFood(foodEntity)
+            foodDao.upsertFoodEntity(foodEntity = foodEntity)
         }
     }
 
     override suspend fun deleteFoodEntityById(id: Long) {
         withContext(Dispatchers.IO) {
-            foodDao.deleteFoodEntityById(id)
+            foodDao.deleteFoodEntityById(id = id)
         }
     }
 
-    override suspend fun findFoodById(id: Long): FoodEntity {
+    override suspend fun readFoodEntityById(id: Long): FoodEntity {
         return withContext(Dispatchers.IO) {
-            foodDao.findFoodById(id)
+            foodDao.readFoodEntityById(foodId = id)
         }
     }
 
-    override fun getFoodByTimestamp(timeStampEpochSec: Long): Flow<List<FoodEntity>?> =
-        foodDao.getFoodByTimeStamp(timeStampEpochSec)
+    override fun readFoodEntitiesByTime(timeStampEpochSec: Long): Flow<List<FoodEntity>?> =
+        foodDao.readFoodEntitiesByTime(timeStampEpochSec = timeStampEpochSec)
             .flowOn(
                 context = Dispatchers.IO
             )
 
-
-    override fun recentFoodsPager() = Pager(
+    override fun readRecentFoodEntitiesPager() = Pager(
         config = PagingConfig(
             pageSize = 8
         ),
-        pagingSourceFactory = { foodDao.recentFoodPagingSource() }
+        pagingSourceFactory = { foodDao.readRecentFoodPagingSource() }
     )
 }

@@ -24,9 +24,9 @@ import com.peep.nocalorieleftbehind.core.ui.Summary
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.logfood.di.LogFoodModule
 import com.peep.nocalorieleftbehind.logfood.ui.LogFoodScreen
-import com.peep.nocalorieleftbehind.onboarding.NutrientSelectionScreen
-import com.peep.nocalorieleftbehind.onboarding.NutrientTargetsScreen
-import com.peep.nocalorieleftbehind.onboarding.OnboardingViewModel
+import com.peep.nocalorieleftbehind.onboarding.ui.NutrientSelectionScreen
+import com.peep.nocalorieleftbehind.onboarding.ui.SetNutrientGoalScreen
+import com.peep.nocalorieleftbehind.onboarding.ui.OnboardingViewModel
 import com.peep.nocalorieleftbehind.onboarding.di.OnboardingModule
 import com.peep.nocalorieleftbehind.preference.di.PreferenceModule
 import com.peep.nocalorieleftbehind.preference.ui.PreferenceScreen
@@ -64,7 +64,6 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(key1 = Unit) {
                         appConfig.isOnboardingCompleted().also { isOnboardingCompleted ->
-                            println("onboarding completed: $isOnboardingCompleted")
                             if (!isOnboardingCompleted) startDestination.value = Onboarding
                         }
                     }
@@ -74,32 +73,35 @@ class MainActivity : ComponentActivity() {
                         startDestination = startDestination.value
                     ) {
                         navigation<Onboarding>(startDestination = Onboarding.NutrientSelection) {
-                            composable<Onboarding.NutrientSelection> {
-                                val viewModel = it.sharedKoinViewModel<OnboardingViewModel>(
+                            composable<Onboarding.NutrientSelection> { navBackStackEntry ->
+                                val viewModel = navBackStackEntry.sharedKoinViewModel<OnboardingViewModel>(
                                     navController = navController,
                                     navGraphRoute = Onboarding
                                 )
-                                val nutritionUiState = viewModel.nutritionUiFlow.collectAsStateWithLifecycle()
+                                val onboardingUiState = viewModel.onboardingUiState.collectAsStateWithLifecycle()
 
                                 NutrientSelectionScreen(
-                                    nutritionUi = { nutritionUiState.value },
-                                    onSelectedNutrient = viewModel::onSelected,
-                                    onContinue = { navController.navigate(route = Onboarding.NutrientTargets) }
+                                    nutritionUiState = { onboardingUiState.value.nutritionUiState },
+                                    onTrackNutrient = viewModel::onTrackNutrient,
+                                    onContinue = { navController.navigate(route = Onboarding.SetNutrientGoal) }
                                 )
                             }
-                            composable<Onboarding.NutrientTargets> {
-                                val viewModel = it.sharedKoinViewModel<OnboardingViewModel>(
+                            composable<Onboarding.SetNutrientGoal> { navBackStackEntry ->
+                                val viewModel = navBackStackEntry.sharedKoinViewModel<OnboardingViewModel>(
                                     navController = navController,
                                     navGraphRoute = Onboarding
                                 )
-                                val nutritionUiState = viewModel.nutritionUiFlow.collectAsStateWithLifecycle()
-                                val screenUiState = viewModel.ui.collectAsStateWithLifecycle()
+                                val onboardingUiState = viewModel.onboardingUiState.collectAsStateWithLifecycle()
 
-                                NutrientTargetsScreen(
-                                    ui = { screenUiState.value },
-                                    selectedNutrient = { nutritionUiState.value.trackedNutrients(includeCalories = true) },
-                                    nutritionUi = { nutritionUiState.value },
-                                    onInput = viewModel::onInput,
+                                SetNutrientGoalScreen(
+                                    state = { onboardingUiState.value.state },
+                                    trackedNutrients = {
+                                        onboardingUiState.value.nutritionUiState.trackedNutrients(
+                                            includeCalories = true
+                                        )
+                                    },
+                                    nutritionUiState = { onboardingUiState.value.nutritionUiState },
+                                    onNutrientGoalInput = viewModel::onNutrientGoalInput,
                                     onSave = {
                                         viewModel.savePreference(
                                             onCompletion = {

@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.core.ui
+package com.peep.nocalorieleftbehind.core.util
 
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix

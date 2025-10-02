@@ -2,21 +2,21 @@ package com.peep.nocalorieleftbehind.core.data.local
 
 import androidx.paging.Pager
 import com.peep.nocalorieleftbehind.core.data.local.entity.FoodEntity
-import com.peep.nocalorieleftbehind.core.data.local.entity.PreferencesEntity
+import com.peep.nocalorieleftbehind.core.data.local.entity.PreferenceEntity
 import kotlinx.coroutines.flow.Flow
 
 interface NutritionLogLocalDataSource {
-    suspend fun upsertPreference(preferencesEntity: PreferencesEntity)
+    suspend fun upsertPreferenceEntity(preferenceEntity: PreferenceEntity)
 
-    fun queryPreference(): Flow<PreferencesEntity?>
+    fun readPreferenceEntity(): Flow<PreferenceEntity?>
 
-    suspend fun upsertFood(foodEntity: FoodEntity)
+    suspend fun upsertFoodEntity(foodEntity: FoodEntity)
 
     suspend fun deleteFoodEntityById(id: Long)
 
-    suspend fun findFoodById(id: Long): FoodEntity
+    suspend fun readFoodEntityById(id: Long): FoodEntity
 
-    fun getFoodByTimestamp(timeStampEpochSec: Long): Flow<List<FoodEntity>?>
+    fun readFoodEntitiesByTime(timeStampEpochSec: Long): Flow<List<FoodEntity>?>
 
-    fun recentFoodsPager(): Pager<Int, FoodEntity>
+    fun readRecentFoodEntitiesPager(): Pager<Int, FoodEntity>
 }

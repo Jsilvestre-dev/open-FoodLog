@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.preference.ui
+package com.peep.nocalorieleftbehind.preference.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -34,31 +34,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientUiState
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.core.util.UiElement
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.PreferenceCard(
     modifier: Modifier = Modifier,
-    nutrientBeingUpdated: () -> Nutrient?,
-    nutrient: Nutrient,
-    nutrientUiState: () -> UiElement<String>,
+    selectedNutrient: () -> Nutrient?,
+    nutrientUiState: NutrientUiState,
     onRemove: (Nutrient) -> Unit,
     onEdit: () -> Unit
 ) {
     AnimatedVisibility(
-        visible = remember { derivedStateOf { nutrientBeingUpdated() != nutrient } }.value,
+        visible = remember { derivedStateOf { nutrientUiState.nutrient != selectedNutrient() } }.value,
         modifier = modifier,
         enter = fadeIn() + scaleIn(),
         exit = fadeOut() + scaleOut(),
-        label = "${nutrient.name}_card"
+        label = "${nutrientUiState.nutrient.name}_card"
     ) {
         Box(
             modifier = modifier.sharedBounds(
-                sharedContentState = rememberSharedContentState("${nutrient.name}_bounds"),
+                sharedContentState = rememberSharedContentState("${nutrientUiState.nutrient.name}_bounds"),
                 animatedVisibilityScope = this@AnimatedVisibility,
                 enter = scaleIn() + fadeIn(),
                 exit = scaleOut() + fadeOut(),
@@ -78,12 +77,12 @@ fun SharedTransitionScope.PreferenceCard(
 
                         Box(
                             modifier = Modifier.sharedBounds(
-                                sharedContentState = rememberSharedContentState(key = "${nutrient.name}_title"),
+                                sharedContentState = rememberSharedContentState(key = "${nutrientUiState.nutrient.name}_title"),
                                 animatedVisibilityScope = this@AnimatedVisibility,
                             )
                         ) {
                             Text(
-                                text = stringResource(nutrient.nameResId),
+                                text = stringResource(nutrientUiState.nutrient.nameResId),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 fontFamily = montserratFamily
@@ -119,17 +118,17 @@ fun SharedTransitionScope.PreferenceCard(
                                     text = { Text("Remove") },
                                     onClick = remember {
                                         {
-                                            onRemove(nutrient)
+                                            onRemove(nutrientUiState.nutrient)
                                             expanded.value = false
                                         }
                                     },
-                                    enabled = nutrient != Nutrient.CALORIES
+                                    enabled = nutrientUiState.nutrient != Nutrient.CALORIES
                                 )
                             }
                         }
                     }
                     Text(
-                        text = (nutrientUiState() as? UiElement.Success)?.data.plus(" ${nutrient.unit}"),
+                        text = nutrientUiState.data.plus(" ${nutrientUiState.nutrient.unit}"),
                         style = MaterialTheme.typography.bodyLarge,
                         fontFamily = notoSansFamily,
                         fontWeight = FontWeight.Medium
@@ -148,9 +147,8 @@ private fun Preview() {
         SharedTransitionLayout {
             AnimatedVisibility(true) {
                 PreferenceCard(
-                    nutrientBeingUpdated = { null },
-                    nutrient = Nutrient.CALORIES,
-                    nutrientUiState = { UiElement.Success("100") },
+                    selectedNutrient = { null },
+                    nutrientUiState = NutrientUiState(nutrient = Nutrient.CALORIES),
                     onRemove = {},
                     onEdit = {}
                 )

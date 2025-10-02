@@ -2,10 +2,10 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "59568e00e51ab5545756a5a7958fd161",
+    "identityHash": "3109cb47b6cecdf31db8548026aa4a29",
     "entities": [
       {
-        "tableName": "PreferencesEntity",
+        "tableName": "PreferenceEntity",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `calories` INTEGER NOT NULL, `protein` INTEGER, `carbs` INTEGER, `fats` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
@@ -97,7 +97,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '59568e00e51ab5545756a5a7958fd161')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3109cb47b6cecdf31db8548026aa4a29')"
     ]
   }
 }

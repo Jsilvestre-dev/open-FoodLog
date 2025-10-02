@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.onboarding.components
+package com.peep.nocalorieleftbehind.onboarding.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,8 +22,8 @@ fun NutrientSelectionUi(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     selectableNutrients: List<Nutrient>,
-    selectedNutrients: () -> List<Nutrient>,
-    onNutrientSelected: (Nutrient) -> Unit
+    trackedNutrients: () -> List<Nutrient>,
+    onTrackNutrient: (Nutrient) -> Unit
 ) {
     LazyVerticalGrid(
         modifier = modifier,
@@ -52,10 +52,10 @@ fun NutrientSelectionUi(
             contentType = { it }
         ) { nutrient ->
             NutrientCard(
-                isSelected = selectedNutrients().contains(nutrient),
+                isSelected = trackedNutrients().contains(nutrient),
                 nutrient = nutrient,
                 onClick = {
-                    onNutrientSelected(nutrient)
+                    onTrackNutrient(nutrient)
                 }
             )
         }

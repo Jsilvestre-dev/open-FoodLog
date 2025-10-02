@@ -1,15 +1,15 @@
 package com.peep.nocalorieleftbehind.core.data.mapper
 
 import com.peep.nocalorieleftbehind.core.data.local.entity.FoodEntity
-import com.peep.nocalorieleftbehind.core.data.local.entity.PreferencesEntity
+import com.peep.nocalorieleftbehind.core.data.local.entity.PreferenceEntity
 import com.peep.nocalorieleftbehind.core.domain.model.Food
-import com.peep.nocalorieleftbehind.core.domain.model.Preferences
+import com.peep.nocalorieleftbehind.core.domain.model.Preference
 
-fun Preferences.toPreferenceEntity() = PreferencesEntity(
+fun Preference.toPreferenceEntity() = PreferenceEntity(
     nutrition = nutrition
 )
 
-fun PreferencesEntity.toPreference(): Preferences = Preferences(
+fun PreferenceEntity.toPreference(): Preference = Preference(
     nutrition = nutrition
 )
 

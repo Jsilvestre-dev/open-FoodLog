@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.logfood.data
+package com.peep.nocalorieleftbehind.core.data.repository
 
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
@@ -15,28 +15,30 @@ class FoodRepositoryImpl(
     private val localDataSource: NutritionLogLocalDataSource
 ) : FoodRepository {
 
-    override suspend fun saveFood(food: Food) {
-        localDataSource.upsertFood(food.toFoodEntity())
+    override suspend fun updateFood(food: Food) {
+        localDataSource.upsertFoodEntity(food.toFoodEntity())
     }
 
-    override suspend fun deleteFood(id: Long) {
+    override suspend fun removeFoodWithId(id: Long) {
         localDataSource.deleteFoodEntityById(id)
     }
 
     override suspend fun getFoodWithId(id: Long): Food {
-        return localDataSource.findFoodById(id).toFood()
+        return localDataSource.readFoodEntityById(id).toFood()
     }
 
-    override fun getFoodsOnDay(timeStampEpochSec: Long): Flow<List<Food>> {
-        return localDataSource.getFoodByTimestamp(timeStampEpochSec).map { foodEntityList ->
-            foodEntityList?.map { foodEntity ->
-                foodEntity.toFood()
-            } ?: emptyList()
-        }
+    override fun getFoodsByTime(timeStampEpochSec: Long): Flow<List<Food>> {
+        return localDataSource
+            .readFoodEntitiesByTime(timeStampEpochSec)
+            .map { foodEntityList ->
+                foodEntityList?.map { foodEntity ->
+                    foodEntity.toFood()
+                } ?: emptyList()
+            }
     }
 
     override fun recentFoods(viewModelScope: CoroutineScope): Flow<PagingData<Food>> {
-        return localDataSource.recentFoodsPager().flow
+        return localDataSource.readRecentFoodEntitiesPager().flow
             .cachedIn(viewModelScope).map { pagingData ->
                 pagingData.map { foodEntity ->
                     foodEntity.toFood()

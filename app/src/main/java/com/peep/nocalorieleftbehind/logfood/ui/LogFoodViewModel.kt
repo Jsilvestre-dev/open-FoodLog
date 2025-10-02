@@ -2,19 +2,19 @@ package com.peep.nocalorieleftbehind.logfood.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peep.nocalorieleftbehind.R
 import com.peep.nocalorieleftbehind.core.domain.ValidateFoodNameUseCase
-import com.peep.nocalorieleftbehind.core.domain.ValidateNutrientUseCase
+import com.peep.nocalorieleftbehind.core.domain.ValidateNutrientAmountUseCase
 import com.peep.nocalorieleftbehind.core.domain.model.Food
-import com.peep.nocalorieleftbehind.core.ui.NutritionUi
+import com.peep.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.peep.nocalorieleftbehind.core.ui.toNutrition
-import com.peep.nocalorieleftbehind.core.ui.toNutritionUiLoading
-import com.peep.nocalorieleftbehind.core.util.Ui
-import com.peep.nocalorieleftbehind.core.util.UiElement
+import com.peep.nocalorieleftbehind.core.ui.toNutritionUi
+import com.peep.nocalorieleftbehind.core.util.State
 import com.peep.nocalorieleftbehind.core.util.Utils
-import com.peep.nocalorieleftbehind.logfood.data.FoodRepository
+import com.peep.nocalorieleftbehind.core.data.repository.FoodRepository
 import com.peep.nocalorieleftbehind.logfood.data.toLogFoodUi
-import com.peep.nocalorieleftbehind.preference.data.PreferenceRepository
-import com.peep.nocalorieleftbehind.preference.ui.NutrientData
+import com.peep.nocalorieleftbehind.core.data.repository.PreferenceRepository
+import com.peep.nocalorieleftbehind.core.ui.model.NutrientInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -27,7 +27,7 @@ import kotlin.time.ExperimentalTime
 class LogFoodViewModel(
     private val foodRepository: FoodRepository,
     private val preferenceRepository: PreferenceRepository,
-    private val validateNutrientUseCase: ValidateNutrientUseCase,
+    private val validateNutrientAmountUseCase: ValidateNutrientAmountUseCase,
     private val validateFoodNameUseCase: ValidateFoodNameUseCase
 ) : ViewModel() {
 
@@ -37,19 +37,24 @@ class LogFoodViewModel(
                 foodId == null -> {
                     val preference = preferenceRepository.getPreference().first()
 
-                    if (preference == null) return@launch _logFoodUiFlow.update { it.copy(uiState = Ui.Error) }
+                    if (preference == null) return@launch _logFoodUiFlow.update {
+                        it.copy(
+                            state = State.Error,
+                            errorMessage = R.string.try_refreshing
+                        )
+                    }
 
                     _logFoodUiFlow.update {
                         LogFoodUi(
-                            uiState = Ui.Success,
-                            nutritionUi = preference.nutrition.toNutritionUiLoading()
+                            state = State.Success,
+                            nutritionUi = preference.nutrition.toNutritionUi(copyData = false)
                         )
                     }
                 }
 
                 else -> {
                     val logFoodUi = foodRepository.getFoodWithId(foodId).toLogFoodUi()
-                    _logFoodUiFlow.update { logFoodUi.copy(uiState = Ui.Success) }
+                    _logFoodUiFlow.update { logFoodUi.copy(state = State.Success) }
                 }
             }
         }
@@ -61,20 +66,19 @@ class LogFoodViewModel(
     fun onFoodName(name: String) {
         viewModelScope.launch {
             _logFoodUiFlow.update { logFoodUi ->
-                logFoodUi.copy(foodNameUi = validateFoodNameUseCase(name))
+                logFoodUi.copy(nameUiState = validateFoodNameUseCase(name))
             }
         }
     }
 
-    fun onMacro(nutrientData: NutrientData) {
+    fun onNutrientInput(nutrientInput: NutrientInput) {
         viewModelScope.launch {
-            val validatedNutrientValue = validateNutrientUseCase(nutrientData.value)
+            val nutrientUiState = validateNutrientAmountUseCase(nutrientInput = nutrientInput)
             _logFoodUiFlow.update { logFoodUiState ->
-
                 logFoodUiState.copy(
-                    nutritionUi = logFoodUiState.nutritionUi.updateNutrientUi(
-                        nutrientData.nutrient,
-                        validatedNutrientValue
+                    nutritionUi = logFoodUiState.nutritionUi.updateNutrient(
+                        nutrient = nutrientInput.nutrient,
+                        nutrientUiState = nutrientUiState
                     )
                 )
             }
@@ -86,47 +90,39 @@ class LogFoodViewModel(
         viewModelScope.launch {
             val currentLogFoodUi = _logFoodUiFlow.value
 
-            _logFoodUiFlow.update { it.copy(uiState = Ui.Loading) }
+            _logFoodUiFlow.update { it.copy(state = State.Loading) }
 
             val logFoodUi = currentLogFoodUi.let { logFoodUi ->
                 LogFoodUi(
-                    foodNameUi = validateFoodNameUseCase((logFoodUi.foodNameUi as? UiElement.Success)?.data),
-                    nutritionUi = NutritionUi(
-                        calories = validateNutrientUseCase(
-                            (logFoodUi.nutritionUi.calories as? UiElement.Success)?.data ?: ""
-                        ),
-                        protein = (logFoodUi.nutritionUi.protein as? UiElement.Success)?.data?.let {
-                            validateNutrientUseCase(
-                                it
-                            )
+                    nameUiState = validateFoodNameUseCase(name = logFoodUi.nameUiState.name),
+                    nutritionUi = NutritionUiState(
+                        calories = validateNutrientAmountUseCase(nutrientUiState = logFoodUi.nutritionUi.calories),
+                        protein = logFoodUi.nutritionUi.protein?.let { nutrientUiState ->
+                            validateNutrientAmountUseCase(nutrientUiState = nutrientUiState)
                         },
-                        carbs = (logFoodUi.nutritionUi.carbs as? UiElement.Success)?.data?.let {
-                            validateNutrientUseCase(
-                                it
-                            )
+                        carbs = logFoodUi.nutritionUi.carbs?.let { nutrientUiState ->
+                            validateNutrientAmountUseCase(nutrientUiState = nutrientUiState)
                         },
-                        fats = (logFoodUi.nutritionUi.fats as? UiElement.Success)?.data?.let {
-                            validateNutrientUseCase(
-                                it
-                            )
+                        fats = logFoodUi.nutritionUi.fats?.let { nutrientUiState ->
+                            validateNutrientAmountUseCase(nutrientUiState = nutrientUiState)
                         }
                     )
                 )
             }
 
             if (!logFoodUi.isLogFoodUiValid()) {
-                _logFoodUiFlow.update { logFoodUi.copy(uiState = Ui.Success) }
+                _logFoodUiFlow.update { logFoodUi.copy(state = State.Success) }
                 return@launch
             }
 
             val food = Food(
                 id = 0,
-                name = (logFoodUi.foodNameUi as UiElement.Success).data,
+                name = logFoodUi.nameUiState.name,
                 nutrition = logFoodUi.nutritionUi.toNutrition(),
                 timeStampEpochSec = Utils.todayMidnightTimestamp()
             )
 
-            foodRepository.saveFood(food)
+            foodRepository.updateFood(food)
 
             onCompletion()
         }

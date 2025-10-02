@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.peep.nocalorieleftbehind.core.domain.Nutrient
 import com.peep.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.peep.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.peep.nocalorieleftbehind.summary.ui.NutrientSummaryUiState
+import com.peep.nocalorieleftbehind.summary.ui.model.NutrientSummaryUiState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

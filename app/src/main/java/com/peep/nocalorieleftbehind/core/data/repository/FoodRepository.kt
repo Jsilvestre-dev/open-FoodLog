@@ -1,4 +1,4 @@
-package com.peep.nocalorieleftbehind.logfood.data
+package com.peep.nocalorieleftbehind.core.data.repository
 
 import androidx.paging.PagingData
 import com.peep.nocalorieleftbehind.core.domain.model.Food
@@ -7,13 +7,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface FoodRepository {
 
-    suspend fun saveFood(food: Food)
+    suspend fun updateFood(food: Food)
 
-    suspend fun deleteFood(id: Long)
+    suspend fun removeFoodWithId(id: Long)
 
     suspend fun getFoodWithId(id: Long): Food
 
-    fun getFoodsOnDay(timeStampEpochSec: Long): Flow<List<Food>>
+    fun getFoodsByTime(timeStampEpochSec: Long): Flow<List<Food>>
 
     fun recentFoods(viewModelScope: CoroutineScope): Flow<PagingData<Food>>
 }
