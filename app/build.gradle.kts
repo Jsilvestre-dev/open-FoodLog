@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace = "com.peep.nocalorieleftbehind"
+    namespace = "com.toadfrog.nocalorieleftbehind"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.peep.nocalorieleftbehind"
+        applicationId = "com.toadfrog.nocalorieleftbehind"
         minSdk = 31
         targetSdk = 36
         versionCode = 1
