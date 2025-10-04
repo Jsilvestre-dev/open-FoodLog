@@ -14,6 +14,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
 import com.toadfrog.nocalorieleftbehind.core.data.local.datastore.AppConfigDatastoreDataSource
 import com.toadfrog.nocalorieleftbehind.core.di.CoreModule
 import com.toadfrog.nocalorieleftbehind.core.ui.LogFood
@@ -39,10 +42,13 @@ import org.koin.compose.viewmodel.sharedKoinViewModel
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var analytics: FirebaseAnalytics
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        analytics = Firebase.analytics
         val appConfig = AppConfigDatastoreDataSource(this)
 
         setContent {

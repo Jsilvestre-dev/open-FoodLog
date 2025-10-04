@@ -1,10 +1,12 @@
 package com.toadfrog.nocalorieleftbehind.summary.ui.model
 
+import androidx.annotation.Keep
 import androidx.compose.runtime.Immutable
 import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 import com.toadfrog.nocalorieleftbehind.core.util.State
 
 @Immutable
+@Keep
 data class SummaryUiState(
     val state: State = State.Loading,
     val calories: NutrientSummaryUiState,

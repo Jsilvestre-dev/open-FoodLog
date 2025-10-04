@@ -193,7 +193,6 @@ fun SharedTransitionScope.NutrientDialog(
 
                         textFieldState.text.toString().let { input ->
                             LaunchedEffect(input) {
-                                println("textField $input")
                                 if (hasStarted.value) {
                                     onInput(
                                         NutrientInput(

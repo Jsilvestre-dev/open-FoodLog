@@ -21,7 +21,7 @@ interface FoodDao {
     suspend fun readFoodEntityById(foodId: Long): FoodEntity
 
     @Query("SELECT * FROM FoodEntity WHERE timeStampEpochSec = :timeStampEpochSec ")
-    fun readFoodEntitiesByTime(timeStampEpochSec: Long): Flow<List<FoodEntity>?>
+    fun readFoodEntitiesByTime(timeStampEpochSec: Long): Flow<List<FoodEntity>>
 
     @Query("SELECT * FROM FoodEntity ORDER BY id DESC")
     fun readRecentFoodPagingSource(): PagingSource<Int, FoodEntity>

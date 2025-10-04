@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "503127741113",
+    "project_id": "no-calorie-left-behind",
+    "storage_bucket": "no-calorie-left-behind.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503127741113:android:af842397ab8383c5180168",
+        "android_client_info": {
+          "package_name": "com.toadfrog.nocalorieleftbehind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgFKjibzSUsGFDbZHJU_DlkzN0DficxMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

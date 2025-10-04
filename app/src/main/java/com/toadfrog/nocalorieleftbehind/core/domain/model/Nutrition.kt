@@ -1,9 +1,11 @@
 package com.toadfrog.nocalorieleftbehind.core.domain.model
 
+import androidx.annotation.Keep
 import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Keep
 data class Nutrition(
     val calories: Int,
     val protein: Int?,

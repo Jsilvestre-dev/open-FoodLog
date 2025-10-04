@@ -59,7 +59,6 @@ class PreferenceViewModel(
             _selectedNutrientUiState.update {
                 preferenceUiState.value.nutritionUiState.getNutrientUi(nutrient)
             }
-            println("onEditNutrient ${_selectedNutrientUiState.value}")
         }
     }
 

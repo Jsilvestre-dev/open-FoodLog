@@ -34,7 +34,7 @@ class ValidateNutrientAmountUseCase {
 
         val amountInt = amount.trim().toIntOrNull() ?: return State.Error to R.string.amount_must_be_num
 
-        if (amountInt <= 0) return State.Error to R.string.positive_amount_only
+        if (amountInt < 0) return State.Error to R.string.positive_amount_only
 
         return State.Success to null
     }

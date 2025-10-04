@@ -1,5 +1,6 @@
 package com.toadfrog.nocalorieleftbehind.core.data.local.entity
 
+import androidx.annotation.Keep
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
 
 @Entity
 @Serializable
+@Keep
 @OptIn(ExperimentalSerializationApi::class)
 data class PreferenceEntity(
     @PrimaryKey

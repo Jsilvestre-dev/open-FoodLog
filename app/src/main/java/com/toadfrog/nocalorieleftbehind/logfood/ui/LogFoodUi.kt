@@ -1,11 +1,13 @@
 package com.toadfrog.nocalorieleftbehind.logfood.ui
 
+import androidx.annotation.Keep
 import androidx.compose.runtime.Immutable
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NameUiState
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.toadfrog.nocalorieleftbehind.core.util.State
 
 @Immutable
+@Keep
 data class LogFoodUi(
     val state: State = State.Loading,
     val nameUiState: NameUiState = NameUiState(),
