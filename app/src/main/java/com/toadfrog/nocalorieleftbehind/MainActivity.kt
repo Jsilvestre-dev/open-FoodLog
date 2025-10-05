@@ -100,13 +100,12 @@ class MainActivity : ComponentActivity() {
                                 val onboardingUiState = viewModel.onboardingUiState.collectAsStateWithLifecycle()
 
                                 SetNutrientGoalScreen(
-                                    state = { onboardingUiState.value.state },
+                                    onboardingUiState = { onboardingUiState.value },
                                     trackedNutrients = {
                                         onboardingUiState.value.nutritionUiState.trackedNutrients(
                                             includeCalories = true
                                         )
                                     },
-                                    nutritionUiState = { onboardingUiState.value.nutritionUiState },
                                     onNutrientGoalInput = viewModel::onNutrientGoalInput,
                                     onSave = {
                                         viewModel.savePreference(

@@ -3,19 +3,19 @@ package com.toadfrog.nocalorieleftbehind.core.domain
 import com.toadfrog.nocalorieleftbehind.R
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientUiState
 import com.toadfrog.nocalorieleftbehind.core.util.State
-import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientInput
+import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientDto
 
 class ValidateNutrientAmountUseCase {
 
-    operator fun invoke(nutrientInput: NutrientInput): NutrientUiState {
+    operator fun invoke(nutrientDto: NutrientDto): NutrientUiState {
 
-        val (uiState, errorMessage) = validateAmount(nutrientInput.amount)
+        val (uiState, errorMessage) = validateAmount(nutrientDto.amount)
 
         return NutrientUiState(
-            nutrient = nutrientInput.nutrient,
+            nutrient = nutrientDto.nutrient,
             state = uiState,
             errorMessage = errorMessage,
-            data = nutrientInput.amount
+            data = nutrientDto.amount
         )
     }
 

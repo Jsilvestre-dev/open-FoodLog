@@ -4,11 +4,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -32,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldLabelPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,21 +55,57 @@ import com.toadfrog.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.notoSansFamily
 import com.toadfrog.nocalorieleftbehind.core.util.State
 import com.toadfrog.nocalorieleftbehind.onboarding.di.OnboardingModule
-import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientInput
+import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientDto
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SetNutrientGoalScreen(
-    state: () -> State,
+    onboardingUiState: () -> OnboardingUiState,
     trackedNutrients: () -> List<Nutrient>,
-    nutritionUiState: () -> NutritionUiState,
-    onNutrientGoalInput: (NutrientInput) -> Unit,
+    onNutrientGoalInput: (NutrientDto) -> Unit,
     onSave: () -> Unit,
 ) {
+    AnimatedContent(
+        targetState = remember { derivedStateOf { onboardingUiState().state } }.value
+    ) { stateTarget ->
+        when (stateTarget) {
+            is State.Error -> {
 
+            }
+
+            is State.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LoadingIndicator()
+                }
+            }
+
+            is State.Success -> {
+                SuccessfulUI(
+                    trackedNutrients = trackedNutrients,
+                    nutritionUi = { onboardingUiState().nutritionUiState },
+                    onNutrientGoalInput = onNutrientGoalInput,
+                    onSave = onSave,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun SuccessfulUI(
+    trackedNutrients: () -> List<Nutrient>,
+    nutritionUi: () -> NutritionUiState,
+    onNutrientGoalInput: (NutrientDto) -> Unit,
+    onSave: () -> Unit
+) {
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -78,153 +117,108 @@ fun SetNutrientGoalScreen(
                 }
             )
         },
-        bottomBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            FilledTonalIconButton(
+                modifier =
+                    Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(
+                            IconButtonDefaults.largeContainerSize(
+                                IconButtonDefaults.IconButtonWidthOption.Wide
+                            )
+                        ),
+                onClick = onSave,
             ) {
-                FilledTonalIconButton(
-                    modifier =
-                        Modifier
-                            .padding(horizontal = 8.dp)
-                            .size(
-                                IconButtonDefaults.largeContainerSize(
-                                    IconButtonDefaults.IconButtonWidthOption.Wide
-                                )
-                            ),
-                    onClick = onSave,
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(IconButtonDefaults.largeIconSize)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(IconButtonDefaults.largeIconSize)
+                )
             }
+
         }
     ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            contentPadding = paddingValues,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(
+                items = trackedNutrients(),
+                key = { it.name },
+                contentType = { nutritionUi().getNutrientUi(it) }
+            ) { nutrient ->
 
-        AnimatedContent(
-            targetState = state()
-        ) { uiTarget ->
-            when (uiTarget) {
-                is State.Error -> {
+                val nutrientUiState = nutritionUi().getNutrientUi(nutrient) ?: return@items
+                val textFieldState = rememberTextFieldState()
+                val hasStarted = remember { mutableStateOf(false) }
 
-                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-                is State.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingIndicator()
-                    }
-                }
-
-                is State.Success -> {
-                    SuccessfulUI(
-                        paddingValues = paddingValues,
-                        trackedNutrients = trackedNutrients,
-                        nutritionUi = nutritionUiState,
-                        onNutrientGoalInput = onNutrientGoalInput,
+                    Text(
+                        modifier = Modifier.weight(.4f),
+                        text = stringResource(nutrient.nameResId),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontFamily = notoSansFamily
                     )
-                }
-            }
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun SuccessfulUI(
-    paddingValues: PaddingValues,
-    trackedNutrients: () -> List<Nutrient>,
-    nutritionUi: () -> NutritionUiState,
-    onNutrientGoalInput: (NutrientInput) -> Unit,
-) {
-    LazyColumn(
-        modifier = Modifier
-            .padding(paddingValues)
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(
-            items = trackedNutrients(),
-            key = { it.name },
-            contentType = { nutritionUi().getNutrientUi(it) }
-        ) { nutrient ->
-
-            val nutrientUiState = nutritionUi().getNutrientUi(nutrient) ?: return@items
-            val textFieldState = rememberTextFieldState()
-            val hasStarted = remember { mutableStateOf(false) }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Text(
-                    modifier = Modifier.weight(.4f),
-                    text = stringResource(nutrient.nameResId),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontFamily = notoSansFamily
-                )
-
-                OutlinedTextField(
-                    modifier = Modifier.weight(.6f),
-                    isError = nutrientUiState.state is State.Error,
-                    labelPosition = TextFieldLabelPosition.Attached(),
-                    label = {
-                        if (nutrient != Nutrient.CALORIES) {
-                            Text(
-                                text = "Optional",
-                                fontFamily = notoSansFamily
-                            )
-                        }
-                    },
-
-                    state = textFieldState,
-                    keyboardOptions = KeyboardOptions(
-                        showKeyboardOnFocus = true,
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    suffix = {
-                        Text(
-                            text = nutrient.unit,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = notoSansFamily,
-                        )
-                    },
-                    supportingText = {
-                        AnimatedVisibility(visible = nutrientUiState.state is State.Error) {
-                            nutrientUiState.errorMessage?.let { errorMessage ->
+                    OutlinedTextField(
+                        modifier = Modifier.weight(.6f),
+                        isError = nutrientUiState.state is State.Error,
+                        labelPosition = TextFieldLabelPosition.Attached(),
+                        label = {
+                            if (nutrient != Nutrient.CALORIES) {
                                 Text(
-                                    text = stringResource(errorMessage),
-                                    fontFamily = notoSansFamily,
+                                    text = "Optional",
+                                    fontFamily = notoSansFamily
                                 )
                             }
-                        }
-                    },
-                    inputTransformation = InputTransformation.maxLength(4)
-                )
-            }
+                        },
 
-            textFieldState.text.toString().let { text ->
-                LaunchedEffect(text) {
-                    if (hasStarted.value) {
-                        onNutrientGoalInput(
-                            NutrientInput(
-                                amount = text,
-                                nutrient = nutrient
+                        state = textFieldState,
+                        keyboardOptions = KeyboardOptions(
+                            showKeyboardOnFocus = true,
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        suffix = {
+                            Text(
+                                text = nutrient.unit,
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = notoSansFamily,
                             )
-                        )
+                        },
+                        supportingText = {
+                            AnimatedVisibility(visible = nutrientUiState.state is State.Error) {
+                                nutrientUiState.errorMessage?.let { errorMessage ->
+                                    Text(
+                                        text = stringResource(errorMessage),
+                                        fontFamily = notoSansFamily,
+                                    )
+                                }
+                            }
+                        },
+                        inputTransformation = InputTransformation.maxLength(4)
+                    )
+                }
+
+                textFieldState.text.toString().let { text ->
+                    LaunchedEffect(text) {
+                        if (hasStarted.value) {
+                            onNutrientGoalInput(
+                                NutrientDto(
+                                    amount = text,
+                                    nutrient = nutrient
+                                )
+                            )
+                        }
+                        hasStarted.value = true
                     }
-                    hasStarted.value = true
                 }
             }
         }
@@ -241,15 +235,13 @@ private fun PreviewSuccessfulUi() {
             modules(OnboardingModule, CoreModule)
         }
     ) {
-        Scaffold { paddingValues ->
-            NoCalorieLeftBehindTheme {
-                SuccessfulUI(
-                    paddingValues = paddingValues,
-                    trackedNutrients = { nutrientList(true) },
-                    nutritionUi = { NutritionUiState() },
-                    onNutrientGoalInput = {},
-                )
-            }
+        NoCalorieLeftBehindTheme {
+            SuccessfulUI(
+                trackedNutrients = { nutrientList(true) },
+                nutritionUi = { NutritionUiState() },
+                onNutrientGoalInput = {},
+                onSave = {}
+            )
         }
     }
 }

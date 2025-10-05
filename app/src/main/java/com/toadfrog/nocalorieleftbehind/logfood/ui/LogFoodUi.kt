@@ -9,6 +9,7 @@ import com.toadfrog.nocalorieleftbehind.core.util.State
 @Immutable
 @Keep
 data class LogFoodUi(
+    val id: Long? = null,
     val state: State = State.Loading,
     val nameUiState: NameUiState = NameUiState(),
     val nutritionUi: NutritionUiState = NutritionUiState(),

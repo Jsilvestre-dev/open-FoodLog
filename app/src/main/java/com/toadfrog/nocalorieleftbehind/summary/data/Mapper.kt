@@ -4,7 +4,7 @@ import com.toadfrog.nocalorieleftbehind.core.domain.model.Food
 import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 import com.toadfrog.nocalorieleftbehind.core.domain.model.Preference
 import com.toadfrog.nocalorieleftbehind.core.util.State
-import com.toadfrog.nocalorieleftbehind.summary.ui.model.FoodUi
+import com.toadfrog.nocalorieleftbehind.summary.ui.model.FoodUiState
 import com.toadfrog.nocalorieleftbehind.summary.ui.model.NutrientSummaryUiState
 import com.toadfrog.nocalorieleftbehind.summary.ui.model.SummaryUiState
 import kotlinx.datetime.LocalDate
@@ -78,7 +78,7 @@ fun toSummaryUi(foodsEaten: List<Food>, preference: Preference): SummaryUiState 
     )
 }
 
-fun Food.toFoodUi() = FoodUi(
+fun Food.toFoodUi() = FoodUiState(
     id = id,
     name = name,
     nutrition = nutrition,

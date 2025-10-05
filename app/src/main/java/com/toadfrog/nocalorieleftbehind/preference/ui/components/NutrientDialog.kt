@@ -50,13 +50,13 @@ import com.toadfrog.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.notoSansFamily
 import com.toadfrog.nocalorieleftbehind.core.util.State
-import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientInput
+import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientDto
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.NutrientDialog(
     nutrientUiState: () -> NutrientUiState?,
-    onInput: (NutrientInput) -> Unit,
+    onInput: (NutrientDto) -> Unit,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
 ) {
@@ -195,7 +195,7 @@ fun SharedTransitionScope.NutrientDialog(
                             LaunchedEffect(input) {
                                 if (hasStarted.value) {
                                     onInput(
-                                        NutrientInput(
+                                        NutrientDto(
                                             nutrient = nutrientUiState.nutrient,
                                             amount = input
                                         )
@@ -219,7 +219,7 @@ private fun Preview() {
         SharedTransitionLayout {
             AnimatedVisibility(true) {
                 NutrientDialog(
-                    nutrientUiState = { NutrientUiState(nutrient = Nutrient.CALORIES) },
+                    nutrientUiState = { NutrientUiState(nutrient = Nutrient.CALORIES, data = "0") },
                     onInput = {},
                     onDismiss = {},
                     onSave = {}

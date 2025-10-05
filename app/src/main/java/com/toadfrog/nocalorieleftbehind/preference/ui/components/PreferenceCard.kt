@@ -148,7 +148,7 @@ private fun Preview() {
             AnimatedVisibility(true) {
                 PreferenceCard(
                     selectedNutrient = { null },
-                    nutrientUiState = NutrientUiState(nutrient = Nutrient.CALORIES),
+                    nutrientUiState = NutrientUiState(nutrient = Nutrient.CALORIES, data = "0"),
                     onRemove = {},
                     onEdit = {}
                 )

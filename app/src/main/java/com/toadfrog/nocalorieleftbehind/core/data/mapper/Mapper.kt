@@ -14,7 +14,7 @@ fun PreferenceEntity.toPreference(): Preference = Preference(
 )
 
 fun Food.toFoodEntity() = FoodEntity(
-    id = 0,
+    id = id,
     name = name,
     nutrition = nutrition,
     timeStampEpochSec = timeStampEpochSec

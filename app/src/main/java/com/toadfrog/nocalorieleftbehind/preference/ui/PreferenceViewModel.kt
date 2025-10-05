@@ -11,7 +11,7 @@ import com.toadfrog.nocalorieleftbehind.core.ui.toNutrition
 import com.toadfrog.nocalorieleftbehind.core.ui.toNutritionUi
 import com.toadfrog.nocalorieleftbehind.core.util.State
 import com.toadfrog.nocalorieleftbehind.core.data.repository.PreferenceRepository
-import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientInput
+import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -83,10 +83,10 @@ class PreferenceViewModel(
         }
     }
 
-    fun onInput(nutrientInput: NutrientInput) {
+    fun onInput(nutrientDto: NutrientDto) {
         viewModelScope.launch {
             val validatedNutrientValue =
-                validateNutrientAmountUseCase(nutrientInput)
+                validateNutrientAmountUseCase(nutrientDto)
 
             _selectedNutrientUiState.update { nutritionUi ->
                 validatedNutrientValue

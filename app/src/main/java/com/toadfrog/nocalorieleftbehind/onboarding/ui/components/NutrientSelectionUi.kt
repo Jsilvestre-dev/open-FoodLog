@@ -32,20 +32,6 @@ fun NutrientSelectionUi(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item(
-            key = "title",
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontFamily = montserratFamily,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.headlineMedium,
-                text = "Nutrient Selection"
-            )
-        }
-
         items(
             items = selectableNutrients,
             key = { it.name },

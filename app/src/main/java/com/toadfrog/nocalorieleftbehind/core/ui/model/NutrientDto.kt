@@ -7,7 +7,7 @@ import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 
 @Immutable
 @Keep
-data class NutrientInput(
+data class NutrientDto(
     val amount: String,
     val nutrient: Nutrient,
 )

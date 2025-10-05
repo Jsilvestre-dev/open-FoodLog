@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -19,7 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,12 +30,12 @@ import com.toadfrog.nocalorieleftbehind.core.domain.model.Nutrition
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.montserratFamily
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.notoSansFamily
-import com.toadfrog.nocalorieleftbehind.summary.ui.model.FoodUi
+import com.toadfrog.nocalorieleftbehind.summary.ui.model.FoodUiState
 
 @Composable
 fun FoodEatenCard(
     modifier: Modifier,
-    foodUi: FoodUi,
+    foodUiState: FoodUiState,
     onDeleteFood: (Long) -> Unit,
     onEditFood: (foodId: Long) -> Unit
 ) {
@@ -43,105 +46,83 @@ fun FoodEatenCard(
             contentColor = MaterialTheme.colorScheme.onSecondary
         )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+        Box {
+
+            Box(
+                modifier = Modifier.align(Alignment.TopEnd)
             ) {
-                Column {
-                    Text(
-                        text = foodUi.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontFamily = montserratFamily,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = foodUi.nutrition.calories.toString() + " cal",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.SemiBold
+                val expanded = remember { mutableStateOf(false) }
+
+                IconButton(
+                    onClick = { expanded.value = true },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More Options"
                     )
                 }
-                Box {
-                    val expanded = remember { mutableStateOf(false) }
 
-                    IconButton(
-                        onClick = { expanded.value = true },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More Options"
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded.value,
-                        onDismissRequest = { expanded.value = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Edit Food") },
-                            onClick = { onEditFood(foodUi.id) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Delete Food") },
-                            onClick = { onDeleteFood(foodUi.id) }
-                        )
-                    }
+                DropdownMenu(
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit Food") },
+                        onClick = { onEditFood(foodUiState.id) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete Food") },
+                        onClick = { onDeleteFood(foodUiState.id) }
+                    )
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Column {
-                    Text(
-                        text = foodUi.nutrition.protein.toString() + " g",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "protein",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.Normal
-                    )
+                Row(
+                    modifier = modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column {
+                        Text(
+                            text = foodUiState.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontFamily = montserratFamily,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = foodUiState.nutrition.calories.toString() + " cal",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = notoSansFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
-                Column {
-                    Text(
-                        text = foodUi.nutrition.carbs.toString() + " g",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "carbs",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.Normal
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = foodUi.nutrition.fats.toString() + " g",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "fats",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = notoSansFamily,
-                        fontWeight = FontWeight.Normal
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Absolute.SpaceEvenly
+                ) {
+                    foodUiState.nutrition.getMacronutrients().forEach { nutrientDto ->
+                        Column {
+                            Text(
+                                text = nutrientDto.amount.plus(" " + nutrientDto.nutrient.unit),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = notoSansFamily,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = stringResource(nutrientDto.nutrient.nameResId),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = notoSansFamily,
+                                fontWeight = FontWeight.Normal
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -154,7 +135,7 @@ private fun Preview() {
     NoCalorieLeftBehindTheme {
         FoodEatenCard(
             modifier = Modifier.fillMaxWidth(),
-            foodUi = FoodUi(
+            foodUiState = FoodUiState(
                 id = 0,
                 name = "Watermelon",
                 nutrition = Nutrition(

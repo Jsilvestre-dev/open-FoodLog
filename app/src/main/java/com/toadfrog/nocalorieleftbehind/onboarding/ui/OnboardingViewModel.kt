@@ -10,7 +10,7 @@ import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientUiState
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.toadfrog.nocalorieleftbehind.core.ui.toNutrition
 import com.toadfrog.nocalorieleftbehind.core.util.State
-import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientInput
+import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientDto
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,7 +38,7 @@ class OnboardingViewModel(
                 } else {
                     onboardingUiState.nutritionUiState.updateNutrient(
                         nutrient = nutrient,
-                        nutrientUiState = NutrientUiState(nutrient = nutrient)
+                        nutrientUiState = NutrientUiState(nutrient = nutrient, data = "0")
                     )
                 }
                 onboardingUiState.copy(nutritionUiState = nutritionUiState)
@@ -46,13 +46,13 @@ class OnboardingViewModel(
         }
     }
 
-    fun onNutrientGoalInput(nutrientInput: NutrientInput) {
+    fun onNutrientGoalInput(nutrientDto: NutrientDto) {
         viewModelScope.launch {
             _onboardingUiState.update { onboardingUiState ->
                 onboardingUiState.copy(
                     nutritionUiState = onboardingUiState.nutritionUiState.updateNutrient(
-                        nutrient = nutrientInput.nutrient,
-                        nutrientUiState = validateNutrientAmountUseCase(nutrientInput = nutrientInput)
+                        nutrient = nutrientDto.nutrient,
+                        nutrientUiState = validateNutrientAmountUseCase(nutrientDto = nutrientDto)
                     )
                 )
             }

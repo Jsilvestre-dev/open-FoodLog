@@ -3,18 +3,18 @@ package com.toadfrog.nocalorieleftbehind.logfood.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.toadfrog.nocalorieleftbehind.R
+import com.toadfrog.nocalorieleftbehind.core.data.repository.FoodRepository
+import com.toadfrog.nocalorieleftbehind.core.data.repository.PreferenceRepository
 import com.toadfrog.nocalorieleftbehind.core.domain.ValidateFoodNameUseCase
 import com.toadfrog.nocalorieleftbehind.core.domain.ValidateNutrientAmountUseCase
 import com.toadfrog.nocalorieleftbehind.core.domain.model.Food
+import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientDto
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NutritionUiState
 import com.toadfrog.nocalorieleftbehind.core.ui.toNutrition
 import com.toadfrog.nocalorieleftbehind.core.ui.toNutritionUi
 import com.toadfrog.nocalorieleftbehind.core.util.State
 import com.toadfrog.nocalorieleftbehind.core.util.Utils
-import com.toadfrog.nocalorieleftbehind.core.data.repository.FoodRepository
 import com.toadfrog.nocalorieleftbehind.logfood.data.toLogFoodUi
-import com.toadfrog.nocalorieleftbehind.core.data.repository.PreferenceRepository
-import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -54,7 +54,7 @@ class LogFoodViewModel(
 
                 else -> {
                     val logFoodUi = foodRepository.getFoodWithId(foodId).toLogFoodUi()
-                    _logFoodUiFlow.update { logFoodUi.copy(state = State.Success) }
+                    _logFoodUiFlow.update { logFoodUi }
                 }
             }
         }
@@ -71,13 +71,13 @@ class LogFoodViewModel(
         }
     }
 
-    fun onNutrientInput(nutrientInput: NutrientInput) {
+    fun onNutrientInput(nutrientDto: NutrientDto) {
         viewModelScope.launch {
-            val nutrientUiState = validateNutrientAmountUseCase(nutrientInput = nutrientInput)
+            val nutrientUiState = validateNutrientAmountUseCase(nutrientDto = nutrientDto)
             _logFoodUiFlow.update { logFoodUiState ->
                 logFoodUiState.copy(
                     nutritionUi = logFoodUiState.nutritionUi.updateNutrient(
-                        nutrient = nutrientInput.nutrient,
+                        nutrient = nutrientDto.nutrient,
                         nutrientUiState = nutrientUiState
                     )
                 )
@@ -92,18 +92,19 @@ class LogFoodViewModel(
 
             _logFoodUiFlow.update { it.copy(state = State.Loading) }
 
-            val logFoodUi = currentLogFoodUi.let { logFoodUi ->
+            val logFoodUi = currentLogFoodUi.let {
                 LogFoodUi(
-                    nameUiState = validateFoodNameUseCase(name = logFoodUi.nameUiState.name),
+                    id = it.id,
+                    nameUiState = validateFoodNameUseCase(name = it.nameUiState.name),
                     nutritionUi = NutritionUiState(
-                        calories = validateNutrientAmountUseCase(nutrientUiState = logFoodUi.nutritionUi.calories),
-                        protein = logFoodUi.nutritionUi.protein?.let { nutrientUiState ->
+                        calories = validateNutrientAmountUseCase(nutrientUiState = it.nutritionUi.calories),
+                        protein = it.nutritionUi.protein?.let { nutrientUiState ->
                             validateNutrientAmountUseCase(nutrientUiState = nutrientUiState)
                         },
-                        carbs = logFoodUi.nutritionUi.carbs?.let { nutrientUiState ->
+                        carbs = it.nutritionUi.carbs?.let { nutrientUiState ->
                             validateNutrientAmountUseCase(nutrientUiState = nutrientUiState)
                         },
-                        fats = logFoodUi.nutritionUi.fats?.let { nutrientUiState ->
+                        fats = it.nutritionUi.fats?.let { nutrientUiState ->
                             validateNutrientAmountUseCase(nutrientUiState = nutrientUiState)
                         }
                     )
@@ -116,7 +117,7 @@ class LogFoodViewModel(
             }
 
             val food = Food(
-                id = 0,
+                id = logFoodUi.id ?: 0,
                 name = logFoodUi.nameUiState.name,
                 nutrition = logFoodUi.nutritionUi.toNutrition(),
                 timeStampEpochSec = Utils.todayMidnightTimestamp()
