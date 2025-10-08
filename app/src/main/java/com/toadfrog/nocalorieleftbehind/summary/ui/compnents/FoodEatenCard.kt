@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -26,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.toadfrog.nocalorieleftbehind.R
 import com.toadfrog.nocalorieleftbehind.core.domain.model.Nutrition
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.montserratFamily
@@ -41,10 +40,6 @@ fun FoodEatenCard(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary
-        )
     ) {
         Box {
 
@@ -67,11 +62,11 @@ fun FoodEatenCard(
                     onDismissRequest = { expanded.value = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Edit Food") },
+                        text = { Text(stringResource(R.string.edit_food)) },
                         onClick = { onEditFood(foodUiState.id) }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete Food") },
+                        text = { Text(stringResource(R.string.delete_food)) },
                         onClick = { onDeleteFood(foodUiState.id) }
                     )
                 }

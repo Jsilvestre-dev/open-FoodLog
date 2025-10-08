@@ -48,10 +48,10 @@ class NutritionLogLocalDataSourceImpl(
                 context = Dispatchers.IO
             )
 
-    override fun readRecentFoodEntitiesPager() = Pager(
+    override fun readRecentFoodEntitiesPager(timeStampEpochSec: Long) = Pager(
         config = PagingConfig(
-            pageSize = 8
+            pageSize = 6
         ),
-        pagingSourceFactory = { foodDao.readRecentFoodPagingSource() }
+        pagingSourceFactory = { foodDao.readRecentFoodPagingSource(timeStampEpochSec = timeStampEpochSec) }
     )
 }

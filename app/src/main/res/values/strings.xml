@@ -4,18 +4,28 @@
     <string name="app_name">NoCalorieLeftBehind</string>
 
     // actions
+    <string name="remove">Remove</string>
+    <string name="edit">Edit</string>
     <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
     <string name="save">Save</string>
-
-    // Title
-    <string name="preferences">Preferences</string>
-
-    // descriptions
-    <string name="clear_text">Clear Text</string>
-    <string name="eaten">Eaten</string>
-    <string name="edit_preferences">Edit Preferences</string>
+    <string name="log_food">Log Food</string>
     <string name="go_back">Go Back</string>
+    <string name="edit_preferences">Edit Preferences</string>
+    <string name="edit_food">Edit Food</string>
+    <string name="delete_food">Delete Food</string>
+
+    // text
+    <string name="nutrient_selection">Nutrient Selection</string>
+    <string name="preferences">Preferences</string>
+    <string name="nutrient_summary">Nutrient Summary</string>
+    <string name="set_daily_intake_goal">Set Daily Intake Goals</string>
+    <string name="optional">Optional</string>
+    <string name="eaten">Eaten</string>
     <string name="left">Left</string>
+    <string name="todays_food_log">Today\'s Food Log</string>
+    <string name="more_options">More Options</string>
+    <string name="summary">Summary</string>
 
     // nutrition
     <string name="food_name">Food name</string>

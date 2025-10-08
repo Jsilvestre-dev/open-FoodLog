@@ -10,7 +10,7 @@ import com.toadfrog.nocalorieleftbehind.core.util.State
 data class SummaryUiState(
     val state: State = State.Loading,
     val calories: NutrientSummaryUiState,
-    val nutrientSummaryList: List<NutrientSummaryUiState>,
+    val nutritionSummary: List<NutrientSummaryUiState>,
     val date: String,
     val errorMessage: Int? = null
 ) {
@@ -22,7 +22,7 @@ data class SummaryUiState(
                 left = 0,
                 total = 0
             ),
-            nutrientSummaryList = buildList {
+            nutritionSummary = buildList {
                 add(
                     NutrientSummaryUiState(
                         nutrient = Nutrient.PROTEIN,

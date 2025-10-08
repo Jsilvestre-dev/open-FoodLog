@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.toadfrog.nocalorieleftbehind.R
 import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NutrientUiState
 import com.toadfrog.nocalorieleftbehind.core.ui.theme.NoCalorieLeftBehindTheme
@@ -97,7 +98,7 @@ fun SharedTransitionScope.PreferenceCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
-                                    contentDescription = "More Options"
+                                    contentDescription = stringResource(R.string.more_options)
                                 )
                             }
 
@@ -106,7 +107,7 @@ fun SharedTransitionScope.PreferenceCard(
                                 onDismissRequest = { expanded.value = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Edit") },
+                                    text = { Text(stringResource(R.string.edit)) },
                                     onClick = remember {
                                         {
                                             onEdit()
@@ -115,7 +116,7 @@ fun SharedTransitionScope.PreferenceCard(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Remove") },
+                                    text = { Text(stringResource(R.string.remove)) },
                                     onClick = remember {
                                         {
                                             onRemove(nutrientUiState.nutrient)

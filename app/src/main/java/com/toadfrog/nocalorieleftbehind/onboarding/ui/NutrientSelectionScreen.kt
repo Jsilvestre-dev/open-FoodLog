@@ -17,9 +17,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.toadfrog.nocalorieleftbehind.R
 import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 import com.toadfrog.nocalorieleftbehind.core.domain.nutrientList
 import com.toadfrog.nocalorieleftbehind.core.ui.model.NutritionUiState
@@ -42,7 +44,7 @@ fun NutrientSelectionScreen(
                     Text(
                         fontFamily = montserratFamily,
                         fontWeight = FontWeight.Bold,
-                        text = "Nutrient Selection"
+                        text = stringResource(R.string.nutrient_selection)
                     )
                 }
             )

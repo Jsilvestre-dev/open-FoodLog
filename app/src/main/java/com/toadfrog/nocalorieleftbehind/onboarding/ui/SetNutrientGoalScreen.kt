@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.toadfrog.nocalorieleftbehind.R
 import com.toadfrog.nocalorieleftbehind.core.di.CoreModule
 import com.toadfrog.nocalorieleftbehind.core.domain.Nutrient
 import com.toadfrog.nocalorieleftbehind.core.domain.nutrientList
@@ -110,7 +111,7 @@ private fun SuccessfulUI(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Set daily Nutrient goals",
+                        text = stringResource(R.string.set_daily_intake_goal),
                         fontFamily = montserratFamily,
                         fontWeight = FontWeight.Bold
                     )
@@ -174,7 +175,7 @@ private fun SuccessfulUI(
                         label = {
                             if (nutrient != Nutrient.CALORIES) {
                                 Text(
-                                    text = "Optional",
+                                    text = stringResource(R.string.optional),
                                     fontFamily = notoSansFamily
                                 )
                             }

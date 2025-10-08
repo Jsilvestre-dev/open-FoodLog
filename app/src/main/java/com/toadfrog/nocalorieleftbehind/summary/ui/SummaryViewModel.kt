@@ -2,6 +2,7 @@ package com.toadfrog.nocalorieleftbehind.summary.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import androidx.paging.map
 import com.toadfrog.nocalorieleftbehind.R
 import com.toadfrog.nocalorieleftbehind.core.util.State
@@ -54,9 +55,15 @@ class SummaryViewModel(
         }
     }
 
-    val recentFoodsPagingData = foodRepository.recentFoods(viewModelScope).map { pagingData ->
-        pagingData.map { food ->
-            food.toFoodUi()
-        }
-    }
+    val recentFoodsPagingData =
+        foodRepository
+            .recentFoods(
+                timeStampEpochSec = Utils.todayMidnightTimestamp()
+            )
+            .cachedIn(viewModelScope)
+            .map { pagingData ->
+                pagingData.map { food ->
+                    food.toFoodUi()
+                }
+            }
 }

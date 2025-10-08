@@ -18,5 +18,5 @@ interface NutritionLogLocalDataSource {
 
     fun readFoodEntitiesByTime(timeStampEpochSec: Long): Flow<List<FoodEntity>?>
 
-    fun readRecentFoodEntitiesPager(): Pager<Int, FoodEntity>
+    fun readRecentFoodEntitiesPager(timeStampEpochSec: Long): Pager<Int, FoodEntity>
 }

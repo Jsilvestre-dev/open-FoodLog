@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +19,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -75,7 +73,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplicationPreview
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LogFoodScreen(
     foodId: Long?,
@@ -84,52 +82,8 @@ fun LogFoodScreen(
     val viewModel = koinViewModel<LogFoodViewModel>()
     viewModel.initialize(foodId = foodId)
     val logFoodUiState = viewModel.logFoodUiFLow.collectAsStateWithLifecycle()
-
-    AnimatedContent(
-        targetState = remember { derivedStateOf { logFoodUiState.value.state } }.value
-    ) { targetState ->
-        when (targetState) {
-            is State.Error -> {}
-            is State.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LoadingIndicator()
-                }
-            }
-
-            is State.Success -> {
-                Ui(
-                    nameUiState = { logFoodUiState.value.nameUiState },
-                    nutritionUi = { logFoodUiState.value.nutritionUi },
-                    onFoodName = viewModel::onFoodName,
-                    onMacro = viewModel::onNutrientInput,
-                    onBack = onFinishedScreen,
-                    onLogFood = {
-                        viewModel.logFood(onCompletion = onFinishedScreen)
-                    }
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
-@Composable
-private fun Ui(
-    nameUiState: () -> NameUiState,
-    nutritionUi: () -> NutritionUiState,
-    onFoodName: (String) -> Unit,
-    onMacro: (NutrientDto) -> Unit,
-    onBack: () -> Unit,
-    onLogFood: () -> Unit,
-) {
-    val focusManager = LocalFocusManager.current
-
     val density = LocalDensity.current
     val insets = WindowInsets.ime
-
     val isKeyboardVisible = remember {
         derivedStateOf {
             insets.getBottom(density) > 0
@@ -142,7 +96,7 @@ private fun Ui(
             CenterAlignedTopAppBar(
                 navigationIcon = {
                     IconButton(
-                        onClick = onBack,
+                        onClick = onFinishedScreen,
                         colors = IconButtonDefaults.iconButtonVibrantColors()
                     ) {
                         Icon(
@@ -176,7 +130,9 @@ private fun Ui(
                                     IconButtonDefaults.IconButtonWidthOption.Wide
                                 )
                             ),
-                    onClick = onLogFood,
+                    onClick = {
+                        viewModel.logFood(onCompletion = onFinishedScreen)
+                    },
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Done,
@@ -187,46 +143,180 @@ private fun Ui(
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
-        ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(horizontal = 16.dp),
-            contentPadding = paddingValues,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) { paddingValues ->
+        AnimatedContent(
+            targetState = remember { derivedStateOf { logFoodUiState.value.state } }.value
+        ) { targetState ->
+            when (targetState) {
+                is State.Error -> {}
+                is State.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LoadingIndicator()
+                    }
+                }
+
+                is State.Success -> {
+                    Ui(
+                        paddingValues = paddingValues,
+                        nameUiState = { logFoodUiState.value.nameUiState },
+                        nutritionUi = { logFoodUiState.value.nutritionUi },
+                        onFoodName = viewModel::onFoodName,
+                        onMacro = viewModel::onNutrientInput
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun Ui(
+    paddingValues: PaddingValues,
+    nameUiState: () -> NameUiState,
+    nutritionUi: () -> NutritionUiState,
+    onFoodName: (String) -> Unit,
+    onMacro: (NutrientDto) -> Unit,
+) {
+    val focusManager = LocalFocusManager.current
+
+    LazyColumn(
+        modifier = Modifier
+            .padding(horizontal = 16.dp),
+        contentPadding = paddingValues,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item(
+            key = "food_name"
         ) {
-            item(
-                key = "food_name"
+            val textFieldState = rememberTextFieldState(initialText = nameUiState().name)
+            val focusedState = remember { mutableStateOf(false) }
+            val hasStarted = remember { mutableStateOf(false) }
+
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged {
+                        focusedState.value = it.isFocused
+                    },
+                state = textFieldState,
+                label = {
+                    Text(
+                        fontFamily = notoSansFamily,
+                        text = stringResource(R.string.food_name),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                    showKeyboardOnFocus = true
+                ),
+                onKeyboardAction = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                },
+                isError = nameUiState().state is State.Error,
+                supportingText = {
+                    AnimatedVisibility(nameUiState().state is State.Error) {
+                        nameUiState().errorMessage?.let { stringRes ->
+                            Text(
+                                fontFamily = notoSansFamily,
+                                text = stringResource(stringRes),
+                            )
+                        }
+                    }
+                },
+                trailingIcon = {
+                    AnimatedVisibility(nameUiState().state is State.Error) {
+                        Icon(
+                            modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
+                            imageVector = ImageVector.vectorResource(R.drawable.rounded_error_24),
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+
+            textFieldState.text.toString().let { foodName ->
+                LaunchedEffect(foodName) {
+                    if (hasStarted.value) {
+                        onFoodName(foodName)
+                    }
+                    hasStarted.value = true
+                }
+            }
+        }
+
+        items(
+            items = nutritionUi().trackedNutrients(true),
+            key = { nutrient -> nutrient.name },
+            contentType = { nutrient -> nutritionUi().getNutrientUi(nutrient) }
+        ) { nutrient ->
+
+            val nutrientUiState = nutritionUi().getNutrientUi(nutrient) ?: return@items
+            val textFieldState = rememberTextFieldState(initialText = nutrientUiState.data)
+            val hasStarted = remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                val textFieldState = rememberTextFieldState(initialText = nameUiState().name)
-                val focusedState = remember { mutableStateOf(false) }
-                val hasStarted = remember { mutableStateOf(false) }
+                Icon(
+                    imageVector = ImageVector.vectorResource(nutrient.iconResId),
+                    contentDescription = null
+                )
 
                 OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged {
-                            focusedState.value = it.isFocused
-                        },
+                    modifier = Modifier,
                     state = textFieldState,
-                    label = {
-                        Text(
-                            fontFamily = notoSansFamily,
-                            text = stringResource(R.string.food_name),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next,
-                        showKeyboardOnFocus = true
+                        showKeyboardOnFocus = true,
+                        keyboardType = KeyboardType.Number,
+                        imeAction = if (nutrient == nutritionUi().trackedNutrients(true)
+                                .last()
+                        ) ImeAction.Done else ImeAction.Next
                     ),
                     onKeyboardAction = {
-                        focusManager.moveFocus(FocusDirection.Down)
+                        if (nutrient == nutritionUi().trackedNutrients(true)
+                                .last()
+                        ) focusManager.clearFocus() else focusManager.moveFocus(
+                            FocusDirection.Down
+                        )
                     },
-                    isError = nameUiState().state is State.Error,
+                    label = {
+                        Text(
+                            modifier = Modifier.weight(.5f),
+                            fontFamily = notoSansFamily,
+                            text = stringResource(nutrient.nameResId),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    },
+                    isError = nutrientUiState.state is State.Error,
+                    trailingIcon = {
+                        AnimatedVisibility(nutrientUiState.state is State.Error) {
+                            Icon(
+                                modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
+                                imageVector = ImageVector.vectorResource(R.drawable.rounded_error_24),
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    suffix = {
+                        Text(
+                            text = nutrient.unit,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = notoSansFamily,
+                        )
+                    },
                     supportingText = {
-                        AnimatedVisibility(nameUiState().state is State.Error) {
-                            nameUiState().errorMessage?.let { stringRes ->
+                        AnimatedVisibility(nutrientUiState.state is State.Error) {
+                            nutrientUiState.errorMessage?.let { stringRes ->
                                 Text(
                                     fontFamily = notoSansFamily,
                                     text = stringResource(stringRes),
@@ -234,118 +324,22 @@ private fun Ui(
                             }
                         }
                     },
-                    trailingIcon = {
-                        AnimatedVisibility(nameUiState().state is State.Error) {
-                            Icon(
-                                modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
-                                imageVector = ImageVector.vectorResource(R.drawable.rounded_error_24),
-                                contentDescription = null
-                            )
-                        }
-                    }
+                    inputTransformation = InputTransformation.maxLength(4)
                 )
-
-                textFieldState.text.toString().let { foodName ->
-                    LaunchedEffect(foodName) {
-                        if (hasStarted.value) {
-                            onFoodName(foodName)
-                        }
-                        hasStarted.value = true
-                    }
-                }
             }
 
-            items(
-                items = nutritionUi().trackedNutrients(true),
-                key = { nutrient -> nutrient.name },
-                contentType = { nutrient -> nutritionUi().getNutrientUi(nutrient) }
-            ) { nutrient ->
 
-                val nutrientUiState = nutritionUi().getNutrientUi(nutrient) ?: return@items
-                val textFieldState = rememberTextFieldState(initialText = nutrientUiState.data)
-                val hasStarted = remember { mutableStateOf(false) }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(nutrient.iconResId),
-                        contentDescription = null
-                    )
-
-                    OutlinedTextField(
-                        modifier = Modifier,
-                        state = textFieldState,
-                        keyboardOptions = KeyboardOptions(
-                            showKeyboardOnFocus = true,
-                            keyboardType = KeyboardType.Number,
-                            imeAction = if (nutrient == nutritionUi().trackedNutrients(true)
-                                    .last()
-                            ) ImeAction.Done else ImeAction.Next
-                        ),
-                        onKeyboardAction = {
-                            if (nutrient == nutritionUi().trackedNutrients(true)
-                                    .last()
-                            ) focusManager.clearFocus() else focusManager.moveFocus(
-                                FocusDirection.Down
+            textFieldState.text.toString().let { text ->
+                LaunchedEffect(key1 = text) {
+                    if (hasStarted.value) {
+                        onMacro(
+                            NutrientDto(
+                                amount = text,
+                                nutrient = nutrient
                             )
-                        },
-                        label = {
-                            Text(
-                                modifier = Modifier.weight(.5f),
-                                fontFamily = notoSansFamily,
-                                text = stringResource(nutrient.nameResId),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                        },
-                        isError = nutrientUiState.state is State.Error,
-                        trailingIcon = {
-                            AnimatedVisibility(nutrientUiState.state is State.Error) {
-                                Icon(
-                                    modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
-                                    imageVector = ImageVector.vectorResource(R.drawable.rounded_error_24),
-                                    contentDescription = null
-                                )
-                            }
-                        },
-                        suffix = {
-                            Text(
-                                text = nutrient.unit,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium,
-                                fontFamily = notoSansFamily,
-                            )
-                        },
-                        supportingText = {
-                            AnimatedVisibility(nutrientUiState.state is State.Error) {
-                                nutrientUiState.errorMessage?.let { stringRes ->
-                                    Text(
-                                        fontFamily = notoSansFamily,
-                                        text = stringResource(stringRes),
-                                    )
-                                }
-                            }
-                        },
-                        inputTransformation = InputTransformation.maxLength(4)
-                    )
-                }
-
-
-                textFieldState.text.toString().let { text ->
-                    LaunchedEffect(key1 = text) {
-                        if (hasStarted.value) {
-                            onMacro(
-                                NutrientDto(
-                                    amount = text,
-                                    nutrient = nutrient
-                                )
-                            )
-                        }
-                        hasStarted.value = true
+                        )
                     }
+                    hasStarted.value = true
                 }
             }
         }
@@ -369,9 +363,8 @@ private fun Preview() {
                     NutritionUiState()
                 },
                 onFoodName = {},
-                onLogFood = {},
-                onBack = {},
-                onMacro = {}
+                paddingValues = PaddingValues(),
+                onMacro = {},
             )
 
         }

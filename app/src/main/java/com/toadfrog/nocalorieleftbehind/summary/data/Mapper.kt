@@ -69,7 +69,7 @@ fun toSummaryUi(foodsEaten: List<Food>, preference: Preference): SummaryUiState 
     return SummaryUiState(
         state = State.Success,
         calories = caloriesSummary,
-        nutrientSummaryList = buildList {
+        nutritionSummary = buildList {
             proteinSummary?.let { add(it) }
             carbsSummary?.let { add(it) }
             fatsSummary?.let { add(it) }

@@ -8,6 +8,7 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -63,35 +64,66 @@ fun PreferenceScreen() {
     val viewModel = koinViewModel<PreferenceViewModel>()
     val preferenceUiState = viewModel.preferenceUiState.collectAsStateWithLifecycle()
     val selectedNutrientUiState = viewModel.selectedNutrientUiState.collectAsStateWithLifecycle()
+    val showBottomSheet = remember { mutableStateOf(false) }
 
-    AnimatedContent(
-        targetState = remember { derivedStateOf { preferenceUiState.value.state } }.value
-    ) { targetState ->
-        when (targetState) {
-            is State.Error -> {}
-            is State.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LoadingIndicator()
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.preferences),
+                        fontFamily = montserratFamily,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-            }
-
-            is State.Success -> {
-                SuccessUi(
-                    nutritionUi = { preferenceUiState.value.nutritionUiState },
-                    selectedNutrientUiState = { selectedNutrientUiState.value },
-                    onTrackNutrients = viewModel::onTrackNutrients,
-                    onInput = viewModel::onInput,
-                    onEditNutrient = viewModel::onEditNutrient,
-                    onSave = viewModel::savePreference,
-                    onRemove = viewModel::onRemove
+            )
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            SmallExtendedFloatingActionButton(
+                onClick = {
+                    showBottomSheet.value = true
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = ""
                 )
             }
         }
-    }
+    ) { paddingValues ->
+        AnimatedContent(
+            targetState = remember { derivedStateOf { preferenceUiState.value.state } }.value
+        ) { targetState ->
+            when (targetState) {
+                is State.Error -> {}
+                is State.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LoadingIndicator()
+                    }
+                }
 
+                is State.Success -> {
+                    SuccessUi(
+                        paddingValues = paddingValues,
+                        showBottomSheet = { showBottomSheet.value },
+                        onShowBottomSheet = { showBottomSheet.value = it },
+                        nutritionUi = { preferenceUiState.value.nutritionUiState },
+                        selectedNutrientUiState = { selectedNutrientUiState.value },
+                        onTrackNutrients = viewModel::onTrackNutrients,
+                        onInput = viewModel::onInput,
+                        onEditNutrient = viewModel::onEditNutrient,
+                        onSave = viewModel::savePreference,
+                        onRemove = viewModel::onRemove
+                    )
+                }
+            }
+        }
+    }
 }
 
 @OptIn(
@@ -101,6 +133,9 @@ fun PreferenceScreen() {
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 private fun SuccessUi(
+    paddingValues: PaddingValues,
+    showBottomSheet: () -> Boolean,
+    onShowBottomSheet: (Boolean) -> Unit,
     nutritionUi: () -> NutritionUiState,
     selectedNutrientUiState: () -> NutrientUiState?,
     onTrackNutrients: (List<Nutrient>) -> Unit,
@@ -109,59 +144,29 @@ private fun SuccessUi(
     onSave: () -> Unit,
     onRemove: (Nutrient) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
-    val showBottomSheet = remember { mutableStateOf(false) }
-
     SharedTransitionLayout {
-        Scaffold(
-            contentWindowInsets = WindowInsets.safeDrawing,
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = stringResource(R.string.preferences),
-                            fontFamily = montserratFamily,
-                            fontWeight = FontWeight.Bold
-                        )
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = paddingValues
+        ) {
+            items(
+                items = nutritionUi().trackedNutrients(true),
+                key = { it.name },
+                contentType = { nutritionUi().getNutrientUi(it) }
+            ) { nutrient ->
+                PreferenceCard(
+                    modifier = Modifier.animateItem(),
+                    selectedNutrient = { selectedNutrientUiState()?.nutrient },
+                    nutrientUiState = nutritionUi().getNutrientUi(nutrient)!!,
+                    onRemove = onRemove,
+                    onEdit = {
+                        onEditNutrient(nutrient)
                     }
                 )
-            },
-            floatingActionButtonPosition = FabPosition.Center,
-            floatingActionButton = {
-                SmallExtendedFloatingActionButton(
-                    onClick = {
-                        showBottomSheet.value = true
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = ""
-                    )
-                }
-            }
-        ) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = paddingValues
-            ) {
-                items(
-                    items = nutritionUi().trackedNutrients(true),
-                    key = { it.name },
-                    contentType = { nutritionUi().getNutrientUi(it) }
-                ) { nutrient ->
-                    PreferenceCard(
-                        modifier = Modifier.animateItem(),
-                        selectedNutrient = { selectedNutrientUiState()?.nutrient },
-                        nutrientUiState = nutritionUi().getNutrientUi(nutrient)!!,
-                        onRemove = onRemove,
-                        onEdit = {
-                            onEditNutrient(nutrient)
-                        }
-                    )
-                }
             }
         }
+
 
         NutrientDialog(
             nutrientUiState = selectedNutrientUiState,
@@ -176,12 +181,12 @@ private fun SuccessUi(
         )
     }
 
-    if (showBottomSheet.value) {
+    if (showBottomSheet()) {
         ModalBottomSheet(
             modifier = Modifier.fillMaxWidth(),
-            sheetState = sheetState,
+            sheetState = rememberModalBottomSheetState(),
             onDismissRequest = {
-                showBottomSheet.value = false
+                onShowBottomSheet(false)
             }
         ) {
             Column {
@@ -210,11 +215,11 @@ private fun SuccessUi(
                     Button(
                         onClick = {
                             onTrackNutrients(nutrientSelected.value)
-                            showBottomSheet.value = false
+                            onShowBottomSheet(false)
                         }
                     ) {
                         Text(
-                            text = "Confirm",
+                            text = stringResource(R.string.confirm),
                             style = MaterialTheme.typography.bodyLarge,
                             fontFamily = notoSansFamily
                         )
@@ -231,12 +236,15 @@ private fun Preview() {
     NoCalorieLeftBehindTheme {
         AnimatedVisibility(visible = true) {
             SuccessUi(
+                paddingValues = PaddingValues(),
                 nutritionUi = {
                     NutritionUiState()
                 },
                 selectedNutrientUiState = {
                     null
                 },
+                showBottomSheet = { false },
+                onShowBottomSheet = {},
                 onTrackNutrients = {},
                 onInput = {},
                 onEditNutrient = {},
