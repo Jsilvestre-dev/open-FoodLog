@@ -14,10 +14,10 @@ This project was built to explore a simpler approach to macro tracking with a cl
 ## Key Concepts Demonstrated
 
 - Modern Android UI with Jetpack Compose
-- MVVM architecture and reactive state management
+- MVVM and MVI patterns and reactive state management
 - Local persistence with Room
 - Offline-first mobile application design
-- Modular architecture supporting future Kotlin Multiplatform integration
+- Kotlin Multiplatform and Compose Multiplatform
 
 ## Screenshots
 
@@ -34,8 +34,8 @@ This project was built to explore a simpler approach to macro tracking with a cl
 - Customizable daily goals for calories, protein, carbohydrates, and fats
 - Quick food logging with calorie and macronutrient tracking
 - At-a-glance dashboard showing progress toward daily nutrition targets
-- Local data persistence for reliable offline usage
-- Dynamic theming based on the device's system theme
+- Food item search via Fatsecret api 
+- Create and save custom foods
 
 ## Tech Stack
 
@@ -44,6 +44,7 @@ This project was built to explore a simpler approach to macro tracking with a cl
 - **Room Database**: local persistence layer for nutrition data
 - **DataStore**: storage for user preferences and configuration
 - **Kotlin Coroutines & Flow**: asynchronous programming and reactive state management
+- **Ktor-Client**: a multiplatform asynchronous HTTP client for network calls
 
 ## Architecture
 
@@ -54,24 +55,15 @@ The application follows a modern Android architecture centered around MVVM princ
 - **Jetpack Compose** provides a reactive UI that updates automatically when the underlying data changes.
 - **Coroutines and Flow** handle asynchronous operations and allow the UI to react to changes in the database.
 
-## Running the Project
-
-1. Install Android Studio.
-2. Clone the repository:
-3. Open the project in Android Studio.
-4. Allow Gradle to sync.
-5. Run the app on an Android emulator or device.
-
 ### Requirements
 
-- Android Studio
 - Android SDK 33+
+- 6 MB of storage
 
 ## Future Improvements
 
-- Kotlin Multiplatform integration to enable an iOS version of the app
+- iOS release
 - Improvements to ViewModel and data layer architecture
-- Support for saving custom recipes
-- Serving size calculations for logged foods
+- Support for saving complex custom recipes
 - Expanded nutrition analytics and historical tracking
 
