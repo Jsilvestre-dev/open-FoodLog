@@ -1,5 +1,7 @@
 # No Calorie Left Behind
 
+https://play.google.com/store/apps/details?id=com.frogntoad.foodlog
+
 No Calorie Left Behind is a macronutrient and calorie tracking Android application designed to make it easy to monitor daily nutrition goals at a glance.
 
 Users can configure custom calorie and macronutrient targets and log food entries throughout the day while tracking their progress through a clean and responsive interface. The app is built using modern Android development practices including Jetpack Compose for UI, Room for local persistence, and reactive state management using Kotlin Coroutines and Flow.
